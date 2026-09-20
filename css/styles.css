@@ -76,6 +76,7 @@
   --accent-soft: rgba(222, 138, 110, 0.16);
   --accent-border: rgba(222, 138, 110, 0.32);
   --accent-text: #EE9E86;
+  --hero-gradient: linear-gradient(90deg, #DE8A6E 0%, #C97255 100%);
   
   --success: #679E78;
   --success-soft: rgba(103, 158, 120, 0.16);
@@ -87,6 +88,162 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 12px 38px rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   Google Gemini Theme (Deep Space / Cosmic Blue-Purple Spark)
+   ========================================================================== */
+[data-theme="gemini"] {
+  --bg-canvas: #0F0F11;
+  --bg-surface: #18191B;
+  --bg-subtle: #222326;
+  --bg-subtle-hover: #2B2D31;
+  --bg-input: #131416;
+  
+  --text-primary: #E8EAED;
+  --text-secondary: #9AA0A6;
+  --text-muted: #70757A;
+  --text-inverse: #0F0F11;
+  
+  --border-subtle: #2C2E33;
+  --border-medium: #3C4043;
+  --border-strong: #5F6368;
+  
+  --accent: #7CA5FF;
+  --accent-hover: #96B9FF;
+  --accent-active: #B5CEFF;
+  --accent-soft: rgba(124, 165, 255, 0.16);
+  --accent-border: rgba(124, 165, 255, 0.32);
+  --accent-text: #A8C7FA;
+  --hero-gradient: linear-gradient(90deg, #4285F4 0%, #9B72CF 50%, #D96570 100%);
+  
+  --success: #81C995;
+  --success-soft: rgba(129, 201, 149, 0.16);
+  --warning: #FDD663;
+  --warning-soft: rgba(253, 214, 99, 0.16);
+  --danger: #F28B82;
+  --danger-soft: rgba(242, 139, 130, 0.16);
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 18px rgba(15, 15, 17, 0.5);
+  --shadow-lg: 0 12px 38px rgba(0, 0, 0, 0.7);
+}
+
+/* ==========================================================================
+   ChatGPT / OpenAI Theme (Minimalist Dark Slate & Emerald)
+   ========================================================================== */
+[data-theme="chatgpt"] {
+  --bg-canvas: #212121;
+  --bg-surface: #2F2F2F;
+  --bg-subtle: #383838;
+  --bg-subtle-hover: #424242;
+  --bg-input: #1C1C1C;
+  
+  --text-primary: #ECECF1;
+  --text-secondary: #C5C5D2;
+  --text-muted: #8E8EA0;
+  --text-inverse: #212121;
+  
+  --border-subtle: #3D3D3D;
+  --border-medium: #4D4D4F;
+  --border-strong: #6E6E80;
+  
+  --accent: #10A37F;
+  --accent-hover: #16B88F;
+  --accent-active: #1DCDA0;
+  --accent-soft: rgba(16, 163, 127, 0.16);
+  --accent-border: rgba(16, 163, 127, 0.32);
+  --accent-text: #19C37D;
+  --hero-gradient: linear-gradient(90deg, #10A37F 0%, #19C37D 100%);
+  
+  --success: #19C37D;
+  --success-soft: rgba(25, 195, 125, 0.16);
+  --warning: #F5A623;
+  --warning-soft: rgba(245, 166, 35, 0.16);
+  --danger: #EF4444;
+  --danger-soft: rgba(239, 68, 68, 0.16);
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 38px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================================================
+   GitHub Theme (Developer Dark & Vibrant Green)
+   ========================================================================== */
+[data-theme="github"] {
+  --bg-canvas: #0D1117;
+  --bg-surface: #161B22;
+  --bg-subtle: #21262D;
+  --bg-subtle-hover: #30363D;
+  --bg-input: #090D12;
+  
+  --text-primary: #F0F6FC;
+  --text-secondary: #8B949E;
+  --text-muted: #6E7681;
+  --text-inverse: #0D1117;
+  
+  --border-subtle: #30363D;
+  --border-medium: #3B434D;
+  --border-strong: #505A67;
+  
+  --accent: #238636;
+  --accent-hover: #2EA043;
+  --accent-active: #3FB950;
+  --accent-soft: rgba(46, 160, 67, 0.16);
+  --accent-border: rgba(46, 160, 67, 0.35);
+  --accent-text: #3FB950;
+  --hero-gradient: linear-gradient(90deg, #238636 0%, #58A6FF 100%);
+  
+  --success: #3FB950;
+  --success-soft: rgba(63, 185, 80, 0.16);
+  --warning: #D29922;
+  --warning-soft: rgba(210, 153, 34, 0.16);
+  --danger: #F85149;
+  --danger-soft: rgba(248, 81, 73, 0.16);
+  
+  --shadow-sm: 0 1px 3px rgba(1, 4, 9, 0.3);
+  --shadow-md: 0 4px 18px rgba(1, 4, 9, 0.5);
+  --shadow-lg: 0 12px 38px rgba(1, 4, 9, 0.7);
+}
+
+/* ==========================================================================
+   Steam Theme (Classic Gamer Navy Slate & Electric Cyan)
+   ========================================================================== */
+[data-theme="steam"] {
+  --bg-canvas: #171A21;
+  --bg-surface: #1B2838;
+  --bg-subtle: #2A475E;
+  --bg-subtle-hover: #355773;
+  --bg-input: #101822;
+  
+  --text-primary: #C7D5E0;
+  --text-secondary: #8F98A0;
+  --text-muted: #616D78;
+  --text-inverse: #171A21;
+  
+  --border-subtle: #263645;
+  --border-medium: #31465A;
+  --border-strong: #4B637B;
+  
+  --accent: #66C0F4;
+  --accent-hover: #80CEF7;
+  --accent-active: #A3DEFA;
+  --accent-soft: rgba(102, 192, 244, 0.16);
+  --accent-border: rgba(102, 192, 244, 0.35);
+  --accent-text: #66C0F4;
+  --hero-gradient: linear-gradient(90deg, #1999FF 0%, #66C0F4 50%, #2A475E 100%);
+  
+  --success: #5c7e10;
+  --success-soft: rgba(92, 126, 16, 0.2);
+  --warning: #E5C158;
+  --warning-soft: rgba(229, 193, 88, 0.18);
+  --danger: #CD5444;
+  --danger-soft: rgba(205, 84, 68, 0.2);
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 18px rgba(10, 15, 23, 0.55);
+  --shadow-lg: 0 12px 38px rgba(10, 15, 23, 0.8);
 }
 
 /* ==========================================================================
@@ -282,7 +439,7 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--accent) 0%, #E89E82 100%);
+  background: var(--hero-gradient, linear-gradient(90deg, var(--accent) 0%, #E89E82 100%));
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 

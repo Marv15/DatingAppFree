@@ -139,18 +139,35 @@
     renderAll();
   }
 
+  // --- THEME CONFIGURATION ---
+  const THEMES_CONFIG = {
+    'claude-light': { icon: '☀️', color: '#FAF8F5', name: 'Claude Light' },
+    'claude-dark': { icon: '🌙', color: '#1A1917', name: 'Claude Dark' },
+    'gemini': { icon: '✨', color: '#0F0F11', name: 'Google Gemini' },
+    'chatgpt': { icon: '🟢', color: '#212121', name: 'ChatGPT' },
+    'github': { icon: '🐙', color: '#0D1117', name: 'GitHub' },
+    'steam': { icon: '🎮', color: '#171A21', name: 'Steam' }
+  };
+  const THEME_KEYS = Object.keys(THEMES_CONFIG);
+
   // --- THEME MANAGEMENT ---
   function applyTheme(theme) {
+    if (!THEMES_CONFIG[theme]) theme = 'claude-light';
     document.documentElement.setAttribute('data-theme', theme);
     window.storage.setTheme(theme);
+
+    const config = THEMES_CONFIG[theme];
     if (els.themeIcon) {
-      els.themeIcon.textContent = theme === 'claude-dark' ? '☀️' : '🌙';
+      els.themeIcon.textContent = config.icon;
+    }
+    if (els.btnThemeToggle) {
+      els.btnThemeToggle.title = `Theme: ${config.name} (Click to switch)`;
     }
     if (els.settingsThemeSelect) {
       els.settingsThemeSelect.value = theme;
     }
     if (els.themeColorMeta) {
-      els.themeColorMeta.setAttribute('content', theme === 'claude-dark' ? '#1A1917' : '#FAF8F5');
+      els.themeColorMeta.setAttribute('content', config.color);
     }
   }
 
@@ -169,8 +186,10 @@
 
     if (els.btnThemeToggle) {
       els.btnThemeToggle.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'claude-dark' ? 'claude-light' : 'claude-dark';
+        const current = document.documentElement.getAttribute('data-theme') || 'claude-light';
+        const currentIndex = THEME_KEYS.indexOf(current);
+        const nextIndex = (currentIndex + 1) % THEME_KEYS.length;
+        const next = THEME_KEYS[nextIndex];
         applyTheme(next);
       });
     }
