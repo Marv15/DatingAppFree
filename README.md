@@ -75,11 +75,12 @@ iOS caches the DNS response for the Tailscale domain, and the Service Worker ser
 
 
 ### Option B: GitHub Pages (Easiest — Public, No Setup)
-If you push the repo to GitHub, you can enable GitHub Pages in one click for a permanent free HTTPS URL:
+Fork this repo to your own GitHub account, then enable GitHub Pages for a permanent free HTTPS URL — no PC needs to be running after setup:
 
-1. Go to: **Settings → Pages → Source**: `Deploy from a branch` → `master` / `/ (root)` → **Save**.
-2. After ~60 seconds your app is live at `https://your-username.github.io/DatingAppFree/`.
-3. Open that URL on your phone, add to Home Screen — done. No PC needs to be running.
+1. Click **Fork** at the top of this page to create your own copy of the repo.
+2. In your fork, go to **Settings → Pages → Source**: `Deploy from a branch` → `master` / `/ (root)` → **Save**.
+3. After ~60 seconds your app is live at `https://<your-github-username>.github.io/DatingAppFree/`.
+4. Open that URL on your phone in Safari → Share → „Add to Home Screen" — done.
 
 ### Option C: Local Tunnel (Quick Testing, Temporary URL)
 For short-lived testing without any account or install:
