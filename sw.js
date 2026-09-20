@@ -1,0 +1,98 @@
+// Service Worker for Dating App Free PWA
+// Caches static assets for instant loading and 100% offline usage on iOS & Android.
+// Note: App data (streaks, apps, motivations) lives in persistent client storage
+// and is NEVER altered or removed by service worker updates.
+
+const CACHE_NAME = 'dating-free-v1.0.2';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './css/styles.css',
+  './js/qrcode.js',
+  './js/storage.js',
+  './js/milestones.js',
+  './js/app.js',
+  './manifest.webmanifest',
+  './icons/icon.svg',
+  './icons/apple-touch-icon.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/qr-code.png'
+];
+
+// Install: Cache initial shell assets
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).then(() => self.skipWaiting())
+  );
+});
+
+// Activate: Purge obsolete asset caches from older versions
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            console.log('[SW] Clearing old cache version:', cache);
+            return caches.delete(cache);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// Fetch: Stale-While-Revalidate strategy for lightning fast launches & seamless updates
+self.addEventListener('fetch', (event) => {
+  // Only cache GET requests
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+
+  // Avoid caching foreign cross-origin resources like Google Fonts dynamically or handle gracefully
+  if (url.origin === location.origin) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        }).catch(() => {
+          // Offline fallback
+          return cachedResponse;
+        });
+
+        return cachedResponse || fetchPromise;
+      })
+    );
+  } else {
+    // For external fonts or resources, cache with fallback
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return cached || fetch(event.request).then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clone);
+            });
+          }
+          return response;
+        }).catch(() => cached);
+      })
+    );
+  }
+});
+
+// Handle update trigger from the application UI
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});

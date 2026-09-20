@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="claude-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Dating App Free · Habit & Sobriety Tracker</title>
+  
+  <!-- iOS Safari PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="FreeTime">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#FAF8F5" id="theme-color-meta">
+  
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  
+  <!-- Claude-Style Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Zero Data Loss Update Banner -->
+    <div id="update-banner" class="update-banner">
+      <div class="update-info">
+        <span class="update-dot"></span>
+        <span>A new version is ready (data preserved)</span>
+      </div>
+      <button id="update-refresh-btn" class="update-action-btn">Update Now</button>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon">
+          <img src="icons/icon.svg" alt="FreeTime Logo" width="34" height="34" style="border-radius: 8px;">
+        </div>
+        <div class="brand-text">
+          <h1>Dating App Free</h1>
+          <span class="brand-tag">Real-World Presence</span>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation Tabs (Hidden on mobile, elegant on desktop) -->
+      <nav class="desktop-nav">
+        <button class="nav-tab active" data-tab="dashboard">
+          <span class="nav-icon">🧭</span>
+          <span>Overview</span>
+        </button>
+        <button class="nav-tab" data-tab="apps">
+          <span class="nav-icon">📱</span>
+          <span>Apps</span>
+        </button>
+        <button class="nav-tab" data-tab="milestones">
+          <span class="nav-icon">🌱</span>
+          <span>Stages</span>
+        </button>
+        <button class="nav-tab" data-tab="journal">
+          <span class="nav-icon">✍️</span>
+          <span>Journal</span>
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button id="btn-phone-connect" class="pill-btn primary" style="padding: 5px 12px; gap: 6px;" title="Add to Mobile">
+          <span>📱</span>
+          <span style="font-size: 0.8rem; font-weight: 600;">Add to Mobile</span>
+        </button>
+        <button id="btn-theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+        <button id="btn-open-settings" class="icon-btn" title="Settings & Backup" aria-label="Settings">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW 1: DASHBOARD -->
+    <main id="view-dashboard" class="view-panel">
+      <div class="dashboard-grid">
+        <!-- Primary Column: Hero Counter & Metrics -->
+        <div class="dashboard-col-primary">
+          <!-- Master Hero Counter -->
+          <section class="hero-card">
+            <div class="hero-header">
+              <span class="hero-label">Total Time Free</span>
+              <span id="overall-app-badge" class="overall-status-badge">All Apps Free</span>
+            </div>
+
+            <div class="timer-grid">
+              <div class="timer-unit">
+                <span id="timer-days" class="timer-value">0</span>
+                <span class="timer-label">Days</span>
+              </div>
+              <div class="timer-unit">
+                <span id="timer-hours" class="timer-value">0</span>
+                <span class="timer-label">Hours</span>
+              </div>
+              <div class="timer-unit">
+                <span id="timer-minutes" class="timer-value">0</span>
+                <span class="timer-label">Mins</span>
+              </div>
+              <div class="timer-unit">
+                <span id="timer-seconds" class="timer-value">0</span>
+                <span class="timer-label">Secs</span>
+              </div>
+            </div>
+
+            <p id="overall-last-app-note" class="hero-meta-note">
+              Calculated from your most recently deleted app: <strong>Hinge</strong>
+            </p>
+
+            <!-- Next Milestone Progress Bar -->
+            <div class="milestone-progress-card">
+              <div class="milestone-progress-header">
+                <span class="milestone-target-title">
+                  <span id="hero-milestone-icon">🌱</span>
+                  <span id="hero-milestone-name">Next: 7 Days (Mental Reset)</span>
+                </span>
+                <span id="hero-milestone-percent" class="milestone-target-percent">0%</span>
+              </div>
+              <div class="progress-track">
+                <div id="hero-progress-fill" class="progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Feeling Tempted SOS Button -->
+            <button id="btn-open-sos" class="sos-trigger-btn">
+              <span>🛡️</span> Feeling Tempted? (Urge Shield)
+            </button>
+          </section>
+
+          <!-- Quantified Benefits (Smoke-Free Metrics) -->
+          <section class="section-header">
+            <h2 class="section-title">Reclaimed Life</h2>
+          </section>
+
+          <div class="metrics-row">
+            <div class="metric-card">
+              <span class="metric-card-icon">⏳</span>
+              <span id="metric-hours-saved" class="metric-card-value">0h</span>
+              <span class="metric-card-label">Time Saved</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-card-icon">💶</span>
+              <span id="metric-money-saved" class="metric-card-value">€0</span>
+              <span class="metric-card-label">Fees Avoided</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-card-icon">🚫</span>
+              <span id="metric-swipes-avoided" class="metric-card-value">0</span>
+              <span class="metric-card-label">Swipes Skipped</span>
+            </div>
+          </div>
+
+          <!-- Real World Equivalent Insight Card -->
+          <div class="impact-insight-card">
+            <div class="impact-insight-icon">📖</div>
+            <div class="impact-insight-text">
+              Your saved time is equivalent to reading <strong id="insight-books">0 books</strong> or completing <strong id="insight-workouts">0 gym workouts</strong> in the real world.
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Column: Tracked Apps Preview & Quick Actions -->
+        <div class="dashboard-col-secondary">
+          <section class="section-header">
+            <h2 class="section-title">Tracked Apps</h2>
+            <button id="btn-goto-apps" class="pill-btn">Manage All</button>
+          </section>
+          <div id="dashboard-apps-preview" class="apps-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- MAIN VIEW 2: APPS MANAGEMENT -->
+    <main id="view-apps" class="view-panel hidden">
+      <section class="section-header">
+        <div>
+          <h2 class="section-title">Tracked Apps</h2>
+          <p class="form-help">Each app maintains its own streak and motivation. The master streak tracks your last used app.</p>
+        </div>
+        <button id="btn-add-app" class="pill-btn primary">+ Add App</button>
+      </section>
+
+      <div id="full-apps-list" class="apps-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </main>
+
+    <!-- MAIN VIEW 3: MILESTONES -->
+    <main id="view-milestones" class="view-panel hidden">
+      <section class="section-header">
+        <div>
+          <h2 class="section-title">Recovery Milestones</h2>
+          <p class="form-help">Cognitive and neurochemical stages of disconnecting from algorithmic dating.</p>
+        </div>
+      </section>
+
+      <div id="milestones-list" class="milestones-timeline">
+        <!-- Rendered dynamically -->
+      </div>
+    </main>
+
+    <!-- MAIN VIEW 4: JOURNAL & REFLECTION -->
+    <main id="view-journal" class="view-panel hidden">
+      <div class="journal-grid">
+        <div class="journal-col-form">
+          <!-- Check-In Form Card -->
+          <section class="checkin-prompt-card">
+            <h3 class="section-title" style="font-size: 1.05rem;">Daily Check-In</h3>
+            <p class="form-help">How is your mind feeling today without dating apps?</p>
+
+            <div class="mood-selector" id="mood-selector-container">
+              <div class="mood-pill selected" data-mood="peaceful" data-emoji="🌿" data-label="Peaceful">
+                <span class="mood-emoji">🌿</span>
+                <span class="mood-name">Peaceful</span>
+              </div>
+              <div class="mood-pill" data-mood="energized" data-emoji="⚡" data-label="Energized">
+                <span class="mood-emoji">⚡</span>
+                <span class="mood-name">Energized</span>
+              </div>
+              <div class="mood-pill" data-mood="grounded" data-emoji="✨" data-label="Grounded">
+                <span class="mood-emoji">✨</span>
+                <span class="mood-name">Grounded</span>
+              </div>
+              <div class="mood-pill" data-mood="lonely" data-emoji="🌧️" data-label="Lonely">
+                <span class="mood-emoji">🌧️</span>
+                <span class="mood-name">Lonely</span>
+              </div>
+              <div class="mood-pill" data-mood="tempted" data-emoji="🔥" data-label="Tempted">
+                <span class="mood-emoji">🔥</span>
+                <span class="mood-name">Tempted</span>
+              </div>
+            </div>
+
+            <textarea id="checkin-note" class="checkin-input" rows="3" placeholder="Optional reflection note... What did you notice today?"></textarea>
+
+            <button id="btn-save-checkin" class="pill-btn primary" style="width: 100%; justify-content: center;">
+              Log Today's Reflection
+            </button>
+          </section>
+        </div>
+
+        <div class="journal-col-history">
+          <!-- History -->
+          <section class="section-header">
+            <h3 class="section-title" style="font-size: 1.05rem;">Reflection History</h3>
+          </section>
+          <div id="checkin-history-list" class="checkin-timeline">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div><!-- /.app-container -->
+
+  <!-- Floating Bottom Navigation Pill (Claude Style) -->
+  <nav class="bottom-nav-container">
+    <div class="bottom-nav">
+      <button class="nav-tab active" data-tab="dashboard">
+        <span class="nav-icon">🧭</span>
+        <span>Overview</span>
+      </button>
+      <button class="nav-tab" data-tab="apps">
+        <span class="nav-icon">📱</span>
+        <span>Apps</span>
+      </button>
+      <button class="nav-tab" data-tab="milestones">
+        <span class="nav-icon">🌱</span>
+        <span>Stages</span>
+      </button>
+      <button class="nav-tab" data-tab="journal">
+        <span class="nav-icon">✍️</span>
+        <span>Journal</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================================================
+       MODALS & DRAWERS
+       ======================================================================== -->
+
+  <!-- Modal 1: URGE SOS OVERLAY -->
+  <div id="modal-sos" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Craving Shield</h3>
+        <button class="close-btn" data-close="modal-sos">✕</button>
+      </div>
+
+      <div class="urge-overlay-container">
+        <div class="form-group" style="width: 100%; margin-bottom: 8px;">
+          <label class="form-label" style="text-align: left;">Which app are you tempted to download?</label>
+          <select id="sos-app-select" class="form-control">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Personal Motivation Showcase -->
+        <div class="urge-motivation-showcase">
+          <span id="sos-app-label" class="urge-showcase-app">Why you deleted this app:</span>
+          <p id="sos-motivation-text" class="urge-showcase-text">
+            "Remember why you stepped away."
+          </p>
+        </div>
+
+        <!-- 2-Minute Guided Box Breathing -->
+        <div id="breathing-circle" class="breathing-box">
+          <span id="breathing-instruction" class="breathing-instruction">Breathe In</span>
+          <span id="breathing-timer" class="breathing-countdown">4s</span>
+        </div>
+
+        <button id="btn-toggle-breathing" class="pill-btn" style="margin-bottom: 16px;">
+          ⏸ Pause Breathing
+        </button>
+
+        <!-- 5 Real-Life Grounding Alternatives -->
+        <div class="alternatives-list">
+          <span class="alternatives-title">5 Quick Grounding Alternatives</span>
+          <div class="alternative-item">💧 Drink a tall glass of cold water slowly</div>
+          <div class="alternative-item">🚶 Step outside for 3 minutes without looking at your screen</div>
+          <div class="alternative-item">📖 Read 5 pages of a physical book or magazine</div>
+          <div class="alternative-item">💬 Send an honest, caring text to an existing close friend</div>
+          <div class="alternative-item">🧘 Do 10 slow shoulder rolls and take 5 deep sighs</div>
+        </div>
+
+        <button class="pill-btn primary" data-close="modal-sos" style="width: 100%; justify-content: center; margin-top: 14px;">
+          I Feeling Grounded Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: ADD / EDIT APP -->
+  <div id="modal-app" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 id="app-modal-title" class="sheet-title">Add Tracked App</h3>
+        <button class="close-btn" data-close="modal-app">✕</button>
+      </div>
+
+      <form id="form-app-edit">
+        <input type="hidden" id="app-edit-id" value="">
+
+        <!-- Quick Presets -->
+        <div class="form-group">
+          <label class="form-label">Quick Presets</label>
+          <div class="preset-chips">
+            <button type="button" class="preset-chip" data-preset="Hinge" data-color="#60221E" data-min="45" data-cost="29.99">Hinge</button>
+            <button type="button" class="preset-chip" data-preset="Tinder" data-color="#FD3A73" data-min="45" data-cost="24.99">Tinder</button>
+            <button type="button" class="preset-chip" data-preset="Bumble" data-color="#F4B400" data-min="30" data-cost="19.99">Bumble</button>
+            <button type="button" class="preset-chip" data-preset="Badoo" data-color="#783BF9" data-min="30" data-cost="14.99">Badoo</button>
+            <button type="button" class="preset-chip" data-preset="Grindr" data-color="#FFC700" data-min="45" data-cost="29.99">Grindr</button>
+            <button type="button" class="preset-chip" data-preset="Feeld" data-color="#000000" data-min="30" data-cost="19.99">Feeld</button>
+            <button type="button" class="preset-chip" data-preset="Other" data-color="#CC785C" data-min="30" data-cost="0">Custom</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="app-input-name">App Name</label>
+          <input type="text" id="app-input-name" class="form-control" placeholder="e.g. Hinge" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="app-input-quitdate">Quit Date & Time</label>
+          <input type="datetime-local" id="app-input-quitdate" class="form-control" required>
+          <span class="form-help">When did you stop using or delete this app?</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="app-input-minutes">Minutes / Day</label>
+            <input type="number" id="app-input-minutes" class="form-control" value="45" min="5" max="600">
+            <span class="form-help">Daily time spent</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="app-input-cost">Monthly Fee (€)</label>
+            <input type="number" id="app-input-cost" class="form-control" value="25" min="0" step="0.5">
+            <span class="form-help">Subscription avoided</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="app-input-motivation">Why did you delete this app? (Personal Motivation)</label>
+          <textarea id="app-input-motivation" class="form-control" rows="3" placeholder="e.g. Tired of superficial swiping and endless pen-pals. I want real human connection." required></textarea>
+          <span class="form-help">This will be shown to you whenever you feel tempted to redownload it.</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 18px;">
+          <button type="button" class="pill-btn" data-close="modal-app" style="flex: 1; justify-content: center;">Cancel</button>
+          <button type="submit" class="pill-btn primary" style="flex: 2; justify-content: center;">Save App</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: RESET APP SLIP-UP -->
+  <div id="modal-reset" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Reset App Streak</h3>
+        <button class="close-btn" data-close="modal-reset">✕</button>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 14px;">
+        Did you redownload or browse <strong id="reset-app-name">this app</strong>? Slips happen during recovery. Your past streak will be preserved in history, and you can restart with compassion.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label" for="reset-reason-input">What triggered the slip? (Optional reflection)</label>
+        <textarea id="reset-reason-input" class="form-control" rows="2" placeholder="e.g. Felt lonely on a Friday night..."></textarea>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 16px;">
+        <button type="button" class="pill-btn" data-close="modal-reset" style="flex: 1; justify-content: center;">Keep My Streak</button>
+        <button type="button" id="btn-confirm-reset" class="pill-btn" style="flex: 1; justify-content: center; background: var(--danger); color: white; border-color: var(--danger);">Reset Counter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: SETTINGS & BACKUP -->
+  <div id="modal-settings" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Settings & Data Safety</h3>
+        <button class="close-btn" data-close="modal-settings">✕</button>
+      </div>
+
+      <!-- App Appearance -->
+      <div class="settings-group">
+        <div class="settings-group-title">Appearance & Currency</div>
+        <div class="settings-row">
+          <div>
+            <span class="settings-row-label">Theme</span>
+            <span class="settings-row-sub">Claude warm aesthetic</span>
+          </div>
+          <select id="settings-theme-select" class="form-control" style="width: auto; padding: 6px 10px;">
+            <option value="claude-light">Claude Warm Light</option>
+            <option value="claude-dark">Claude Warm Dark</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <span class="settings-row-label">Currency Symbol</span>
+            <span class="settings-row-sub">For subscription savings</span>
+          </div>
+          <select id="settings-currency-select" class="form-control" style="width: auto; padding: 6px 10px;">
+            <option value="€">EUR (€)</option>
+            <option value="$">USD ($)</option>
+            <option value="£">GBP (£)</option>
+            <option value="CHF">CHF</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Safe Updates & Persistence -->
+      <div class="settings-group">
+        <div class="settings-group-title">App Updates & Persistence</div>
+        <div class="settings-row">
+          <div>
+            <span class="settings-row-label">Zero Data Loss Guarantee</span>
+            <span class="settings-row-sub">Streaks are saved on device; code updates never delete your data</span>
+          </div>
+          <span style="font-size: 1.1rem; color: var(--success);">🛡️</span>
+        </div>
+        <div class="settings-row">
+          <div>
+            <span class="settings-row-label">Check for App Updates</span>
+            <span class="settings-row-sub" id="update-status-text">Up to date</span>
+          </div>
+          <button id="btn-check-updates" class="pill-btn">Check</button>
+        </div>
+      </div>
+
+      <!-- Backup & Restore -->
+      <div class="settings-group">
+        <div class="settings-group-title">Safe Backup & Restore</div>
+        <p class="form-help" style="margin-bottom: 12px;">
+          Export your streaks, tracked apps, and notes to a file or copy them to your clipboard anytime.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button id="btn-export-backup" class="pill-btn" style="width: 100%; justify-content: center;">
+            📥 Download Backup File (JSON)
+          </button>
+          <button id="btn-copy-backup" class="pill-btn" style="width: 100%; justify-content: center;">
+            📋 Copy Backup to Clipboard
+          </button>
+          <label class="pill-btn" style="width: 100%; justify-content: center; cursor: pointer;">
+            📤 Restore from Backup File
+            <input type="file" id="file-import-backup" accept=".json" style="display: none;">
+          </label>
+        </div>
+      </div>
+
+      <!-- Mobile Home Screen Guide Trigger -->
+      <div class="settings-group">
+        <div class="settings-group-title">Mobile Installation</div>
+        <p class="form-help" style="margin-bottom: 8px;">
+          Use as a full-screen app on iPhone or Android without browser URL bars.
+        </p>
+        <button id="btn-show-ios-guide" class="pill-btn" style="width: 100%; justify-content: center;">
+          📱 How to Install on Mobile (iPhone & Android)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: MOBILE INSTALLATION GUIDE -->
+  <div id="modal-ios-guide" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Install on Mobile</h3>
+        <button class="close-btn" data-close="modal-ios-guide">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 6px 0;">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <span style="font-size: 1.4rem;">🍎</span>
+          <div>
+            <strong style="color: var(--text-primary); font-size: 0.92rem;">On iPhone (Safari)</strong>
+            <p class="form-help">Open in Safari &rarr; Tap the <strong>Share</strong> button (square with arrow) &rarr; Tap <strong>"Add to Home Screen"</strong>.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <span style="font-size: 1.4rem;">🤖</span>
+          <div>
+            <strong style="color: var(--text-primary); font-size: 0.92rem;">On Android (Chrome / Samsung)</strong>
+            <p class="form-help">Open in Chrome &rarr; Tap the <strong>three dots (⋮)</strong> in the top right &rarr; Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <span style="font-size: 1.4rem;">✨</span>
+          <div>
+            <strong style="color: var(--text-primary); font-size: 0.92rem;">Standalone Offline App</strong>
+            <p class="form-help">Launch from your phone's home screen. It opens full-screen like a native app and works offline.</p>
+          </div>
+        </div>
+
+        <button class="pill-btn primary" data-close="modal-ios-guide" style="width: 100%; justify-content: center; margin-top: 10px;">
+          Got It
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: PHONE CONNECT & QR CODE -->
+  <div id="modal-phone-connect" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Add to Mobile</h3>
+        <button class="close-btn" data-close="modal-phone-connect">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px;">
+        <p class="form-help" style="margin-bottom: 0;">
+          Scan with your phone's Camera (iPhone or Android) to open this app directly:
+        </p>
+
+        <!-- QR Code Container (Pre-rendered official PNG with dynamic canvas upgrade) -->
+        <div id="phone-qr-container" style="display: flex; justify-content: center; margin: 4px 0;">
+          <img src="icons/qr-code.png" width="240" height="240" alt="Mobile QR Code" style="border-radius: 14px; background: #FFFFFF; padding: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.12);">
+        </div>
+
+        <!-- URL pill & copy button -->
+        <div style="width: 100%; display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="phone-url-display" class="form-control" readonly style="font-family: var(--font-mono); font-size: 0.82rem; text-align: center;">
+          <button id="btn-copy-phone-url" class="pill-btn" style="flex-shrink: 0;">Copy</button>
+        </div>
+
+        <!-- Instructions -->
+        <div class="settings-group" style="width: 100%; text-align: left; margin-bottom: 0;">
+          <div class="settings-group-title">Quick Steps</div>
+          <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; display: flex; flex-direction: column; gap: 8px;">
+            <div>1. Make sure your phone is on the <strong>same Wi-Fi network</strong>.</div>
+            <div>2. Point your phone <strong>Camera</strong> at the QR code and tap the link.</div>
+            <div>3. <strong>iPhone</strong>: Tap Share &rarr; <em>"Add to Home Screen"</em>.<br>
+               &nbsp;&nbsp;&nbsp;<strong>Android</strong>: Tap Menu (⋮) &rarr; <em>"Install app"</em> or <em>"Add to Home screen"</em>.</div>
+          </div>
+        </div>
+
+        <button class="pill-btn primary" data-close="modal-phone-connect" style="width: 100%; justify-content: center; margin-top: 4px;">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/qrcode.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/milestones.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

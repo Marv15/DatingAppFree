@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D97A5B"/>
+      <stop offset="100%" stop-color="#B8593B"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF5EE" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#FFE0D3" stop-opacity="0.75"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#551C0C" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle like iOS icon -->
+  <rect width="512" height="512" rx="115" fill="url(#bg-grad)"/>
+
+  <!-- Subtle inner ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="3"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="2" stroke-dasharray="6 8"/>
+
+  <!-- Central Symbol: Soaring bird / Free wings rising from an open heart -->
+  <g filter="url(#soft-shadow)">
+    <!-- Broken link / Liberation spark -->
+    <path d="M 256 120 
+             C 272 165, 330 195, 395 195 
+             C 330 225, 290 270, 275 330 
+             C 265 285, 230 250, 195 240 
+             C 235 220, 250 175, 256 120 Z" 
+          fill="url(#glow)"/>
+
+    <!-- Left Wing of freedom -->
+    <path d="M 256 220 
+             C 220 180, 150 170, 110 200 
+             C 145 220, 185 245, 215 290 
+             C 228 260, 242 238, 256 220 Z" 
+          fill="#FFF9F5" fill-opacity="0.92"/>
+
+    <!-- Right Wing of freedom -->
+    <path d="M 256 220 
+             C 292 180, 362 170, 402 200 
+             C 367 220, 327 245, 297 290 
+             C 284 260, 270 238, 256 220 Z" 
+          fill="#FFF9F5" fill-opacity="0.92"/>
+
+    <!-- Grounding center gem -->
+    <circle cx="256" cy="350" r="14" fill="#FFFFFF"/>
+    <circle cx="256" cy="390" r="7" fill="#FFFFFF" fill-opacity="0.6"/>
+  </g>
+</svg>
