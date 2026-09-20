@@ -2,7 +2,7 @@
   "name": "Dating App Free",
   "short_name": "FreeTime",
   "description": "Mindful habit tracker for dating app sobriety and real-world freedom.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",

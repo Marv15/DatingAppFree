@@ -3,10 +3,14 @@
 // Note: App data (streaks, apps, motivations) lives in persistent client storage
 // and is NEVER altered or removed by service worker updates.
 
-const CACHE_NAME = 'dating-free-v1.0.18';
+const CACHE_NAME = 'dating-free-v1.0.19';
+
+// Only cache the root path (./), NOT ./index.html separately.
+// Tailscale serve (and similar reverse proxies) redirect /index.html → /,
+// which produces a response with redirected:true that Safari's SW sandbox rejects.
+// Fetching ./ directly always returns a clean 200 OK from the Node server.
 const ASSETS_TO_CACHE = [
   './',
-  './index.html',
   './css/styles.css',
   './js/qrcode.js',
   './js/i18n.js',
@@ -26,116 +30,149 @@ const ASSETS_TO_CACHE = [
   './icons/tinder_logo.svg'
 ];
 
-// Safari-safe helper: fetch a URL and cache it using the *final* URL after any redirects.
-// This prevents "Response served by service worker has redirections" on iOS Safari,
-// which happens when reverse proxies (e.g. Tailscale serve, Caddy, nginx) redirect
-// /index.html → / and the redirect response itself gets cached.
-async function fetchAndCache(cache, url) {
+// -----------------------------------------------------------------------------
+// Safari-safe fetch + cache helper.
+//
+// The root problem: Tailscale serve (Go file server) redirects /index.html → /
+// fetch(url, {redirect:'follow'}) returns a 200 OK but response.redirected===true.
+// WebKit stores this flag in the Cache API and later, when the SW returns this
+// cached response to Safari for a navigate request, Safari throws:
+//   "Response served by service worker has redirections"
+//
+// Fix: Reconstruct a *brand-new* Response from the raw bytes + headers.
+// The new Response object has redirected===false by definition, which satisfies Safari.
+// -----------------------------------------------------------------------------
+async function fetchAndCacheSafe(cache, url) {
   try {
-    // fetch() with redirect:'follow' is the default, giving us the final response.
-    const response = await fetch(url, { redirect: 'follow' });
-    if (response.ok && response.type !== 'opaqueredirect') {
-      // Always store under the ORIGINAL request URL (not the redirect target),
-      // so cache.match(originalUrl) works correctly later.
-      await cache.put(url, response.clone());
-    }
-    return response;
+    const res = await fetch(url, { redirect: 'follow' });
+    if (!res || !res.ok || res.type === 'opaqueredirect') return;
+
+    // Read body as ArrayBuffer and copy headers to strip all redirect metadata.
+    const body = await res.arrayBuffer();
+    const headers = {};
+    res.headers.forEach((val, key) => { headers[key] = val; });
+
+    const cleanResponse = new Response(body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers
+    });
+
+    await cache.put(url, cleanResponse);
   } catch (_) {
-    return null;
+    // Ignore individual asset failures — don't abort the whole install
   }
 }
 
-// Install: Cache initial shell assets, safely handling server-side redirects
+// Install: Pre-cache all shell assets with redirect-stripped responses
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      // Cache each asset individually so one failure doesn't abort the whole install
-      await Promise.all(ASSETS_TO_CACHE.map((url) => fetchAndCache(cache, url)));
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then((cache) => Promise.all(ASSETS_TO_CACHE.map((url) => fetchAndCacheSafe(cache, url))))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate: Purge obsolete asset caches from older versions
+// Activate: Purge old caches from previous versions
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[SW] Clearing old cache version:', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then((names) =>
+      Promise.all(names.map((name) => {
+        if (name !== CACHE_NAME) {
+          console.log('[SW] Deleting old cache:', name);
+          return caches.delete(name);
+        }
+      }))
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch: Cache-first for known assets, network-first with offline fallback for navigation.
-// Safari-safe: never return a redirect response (type === 'opaqueredirect') from the SW.
+// Fetch: Cache-first with Safari-safe response reconstruction.
+// For navigate requests: always serve the app shell from cache (offline-first).
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
 
-  if (url.origin === location.origin) {
-    event.respondWith(
-      caches.match(event.request, { ignoreSearch: true }).then(async (cachedResponse) => {
-
-        // Discard cached redirect responses — Safari will reject them for navigate requests
-        const safeCached = (cachedResponse && cachedResponse.type !== 'opaqueredirect')
-          ? cachedResponse
-          : null;
-
-        if (safeCached) {
-          // Serve from cache immediately; silently revalidate in background
-          fetch(event.request, { redirect: 'follow' }).then(async (networkResponse) => {
-            if (networkResponse && networkResponse.ok && networkResponse.type !== 'opaqueredirect') {
-              const cache = await caches.open(CACHE_NAME);
-              cache.put(event.request, networkResponse.clone());
-            }
-          }).catch(() => { /* offline — silently ignore */ });
-          return safeCached;
-        }
-
-        // Not in cache (or was a cached redirect): fetch from network
-        try {
-          const networkResponse = await fetch(event.request, { redirect: 'follow' });
-          if (networkResponse && networkResponse.ok && networkResponse.type !== 'opaqueredirect') {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        } catch (_) {
-          // Offline fallback for navigation: always return the app shell (index.html)
-          if (event.request.mode === 'navigate') {
-            const fallback = await caches.match('./index.html', { ignoreSearch: true })
-                          || await caches.match('./', { ignoreSearch: true });
-            if (fallback && fallback.type !== 'opaqueredirect') return fallback;
-          }
-          return new Response('Offline — app not yet cached. Please open the app once while online.', {
-            status: 503,
-            headers: { 'Content-Type': 'text/plain' }
-          });
-        }
-      })
-    );
-  } else {
-    // External resources (Google Fonts, etc.): cache-first, silent failure offline
+  // Skip non-same-origin requests (handled separately below)
+  if (url.origin !== location.origin) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
-        if (cached && cached.type !== 'opaqueredirect') return cached;
-        return fetch(event.request).then((response) => {
-          if (response && response.ok && response.type !== 'opaqueredirect') {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        if (cached) return cached;
+        return fetch(event.request).then((res) => {
+          if (res && res.ok) {
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, res.clone()));
           }
-          return response;
-        }).catch(() => cached || new Response('', { status: 503 }));
+          return res;
+        }).catch(() => new Response('', { status: 503 }));
       })
     );
+    return;
   }
+
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+
+    // For navigate requests, always try the app shell cache first.
+    // This makes the PWA launch instantly offline without hitting the network.
+    if (event.request.mode === 'navigate') {
+      // Try cache for the exact request URL first
+      let appShell = await caches.match(event.request, { ignoreSearch: true });
+
+      // Fall back to the cached root ('./') which contains index.html content
+      if (!appShell || appShell.redirected) {
+        appShell = await caches.match('./') || await caches.match('./index.html');
+      }
+
+      if (appShell && !appShell.redirected) {
+        // Revalidate in background if online
+        fetchAndCacheSafe(cache, './').catch(() => {});
+        return appShell;
+      }
+
+      // No cache yet: fetch from network (first launch / after cache clear)
+      try {
+        const res = await fetch(event.request, { redirect: 'follow' });
+        if (res && res.ok) {
+          const body = await res.arrayBuffer();
+          const headers = {};
+          res.headers.forEach((v, k) => { headers[k] = v; });
+          const clean = new Response(body, { status: res.status, statusText: res.statusText, headers });
+          await cache.put('./', clean.clone());
+          return clean;
+        }
+        return res;
+      } catch (_) {
+        return new Response('Offline — please open the app once with an internet connection first.', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain; charset=UTF-8' }
+        });
+      }
+    }
+
+    // Non-navigate requests: cache-first, revalidate in background
+    const cached = await caches.match(event.request, { ignoreSearch: true });
+    if (cached && !cached.redirected) {
+      fetchAndCacheSafe(cache, event.request.url).catch(() => {});
+      return cached;
+    }
+
+    // Not cached: fetch, clean, store
+    try {
+      const res = await fetch(event.request, { redirect: 'follow' });
+      if (res && res.ok && res.type !== 'opaqueredirect') {
+        const body = await res.arrayBuffer();
+        const headers = {};
+        res.headers.forEach((v, k) => { headers[k] = v; });
+        const clean = new Response(body, { status: res.status, statusText: res.statusText, headers });
+        await cache.put(event.request, clean.clone());
+        return clean;
+      }
+      return res;
+    } catch (_) {
+      return new Response('', { status: 503 });
+    }
+  })());
 });
 
 // Handle update trigger from the application UI
