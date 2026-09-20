@@ -55,23 +55,23 @@ Choose the option that fits your setup:
 
 1. **Install Tailscale** on both your Windows PC and your iPhone: https://tailscale.com/download
 2. **Sign in** with the same account on both devices.
-3. Start the local server on your PC as usual (`start.bat` or `node server.js`).
-4. **Enable HTTPS via `tailscale serve`** (requires Tailscale Funnel/Serve, available on all plans):
+3. **Serve the project folder directly** via `tailscale serve` — no need to run `node server.js` separately:
    ```powershell
-   tailscale serve --bg http://localhost:8080
+   tailscale serve --bg C:\Users\YourName\AntigravityProjects\DatingAppFree
    ```
-   This creates a `https://<your-machine-name>.<tailnet-name>.ts.net` URL with a valid certificate.
-5. Open that `https://` URL on your iPhone in Safari and follow Step 3 above.
-6. **Open the app once from the Home Screen with Tailscale/VPN active** — this lets the Service Worker cache all assets on your device.
+   Replace the path with the actual path to your cloned project folder.  
+   This creates a `https://<your-machine-name>.<tailnet-name>.ts.net` URL with a valid certificate served directly by Tailscale's built-in file server.
+4. Open that `https://` URL on your iPhone in Safari and follow Step 3 above.
+5. **Open the app once from the Home Screen with Tailscale/VPN active** — this lets the Service Worker cache all assets on your device.
 
 **After that one-time load, the app works completely offline without VPN.** 🎉  
 iOS caches the DNS response for the Tailscale domain, and the Service Worker serves everything from local device storage — no network connection needed at all.
 
 > [!NOTE]
-> Tailscale `serve` reverse-proxies your local server through their HTTPS infrastructure.
-> The Service Worker in this app is coded to handle the server-side redirects that Tailscale's
-> Go file server may introduce (e.g. `/index.html` → `/`), so you won't see Safari's
-> *"Response served by service worker has redirections"* error.
+> Tailscale's built-in Go file server may redirect `/index.html` → `/`.
+> The Service Worker in this app is specifically coded to handle these redirects,
+> so you won't encounter Safari's *"Response served by service worker has redirections"* error.
+
 
 ### Option B: GitHub Pages (Easiest — Public, No Setup)
 If you push the repo to GitHub, you can enable GitHub Pages in one click for a permanent free HTTPS URL:
