@@ -3,7 +3,7 @@
 // Note: App data (streaks, apps, motivations) lives in persistent client storage
 // and is NEVER altered or removed by service worker updates.
 
-const CACHE_NAME = 'dating-free-v1.0.2';
+const CACHE_NAME = 'dating-free-v1.0.3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

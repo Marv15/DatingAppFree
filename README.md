@@ -48,6 +48,7 @@ The terminal will automatically detect your local Wi-Fi IP and display:
 - **Quantified Freedom (Smoke-Free Style)**: Cumulative hours saved, subscription money saved (€/$/£/CHF), and swipes avoided, translated into real-world equivalents (books read, gym workouts).
 - **Cognitive Milestones**: 10 neuroscience & psychology-backed recovery phases (Day 1 to Year 1) with progress bars.
 - **Daily Reflection Journal**: 1-tap mood check-ins (🌿 Peaceful, ⚡ Energized, ✨ Grounded, 🌧️ Lonely, 🔥 Tempted) with personal notes.
+- **6 Custom Aesthetic Themes**: Switch between **Claude Light** ☀️, **Claude Dark** 🌙, **Google Gemini** ✨ (cosmic dark with blue/purple spark), **ChatGPT** 🟢 (OpenAI slate & emerald), **GitHub** 🐙 (developer dark & vibrant green), and **Steam** 🎮 (gaming navy slate & electric cyan) with 1 click!
 - **Zero Data Loss on Updates**: App code cached by the Service Worker is strictly decoupled from your streak data. Updating the code will **never** delete your streaks.
 - **1-Tap Backup & Restore**: Export your backup JSON file or copy your backup to your clipboard anytime in Settings.
 
