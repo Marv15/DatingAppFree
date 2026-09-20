@@ -15,11 +15,13 @@ function getDefaultState() {
     lastUpdated: new Date().toISOString(),
     currency: '€',
     theme: 'claude-light',
+    language: (typeof window !== 'undefined' && window.i18n) ? window.i18n.detectDefaultLanguage() : 'en',
     apps: [
       {
         id: 'tinder',
         name: 'Tinder',
         color: '#FD3A73',
+        icon: 'icons/tinder_logo.svg',
         quitDate: new Date(now - 14 * day - 8 * 3600 * 1000).toISOString(),
         dailyMinutes: 45,
         monthlyCost: 24.99,
@@ -32,6 +34,7 @@ function getDefaultState() {
         id: 'bumble',
         name: 'Bumble',
         color: '#F4B400',
+        icon: 'icons/bumble_logo.svg',
         quitDate: new Date(now - 7 * day - 4 * 3600 * 1000).toISOString(),
         dailyMinutes: 30,
         monthlyCost: 19.99,
@@ -44,6 +47,7 @@ function getDefaultState() {
         id: 'hinge',
         name: 'Hinge',
         color: '#60221E',
+        icon: 'icons/hinge_logo.svg',
         quitDate: new Date(now - 3 * day - 12 * 3600 * 1000).toISOString(),
         dailyMinutes: 45,
         monthlyCost: 29.99,
@@ -57,7 +61,7 @@ function getDefaultState() {
       {
         id: 'chk-1',
         timestamp: new Date(now - 2 * day).toISOString(),
-        mood: 'calm',
+        mood: 'peaceful',
         moodLabel: 'Peaceful',
         emoji: '🌿',
         note: 'Deleted the last app. Felt immediate relief when picking up my phone.'
@@ -129,6 +133,18 @@ class StorageService {
     if (!Array.isArray(data.checkIns)) data.checkIns = [];
     if (!data.currency) data.currency = '€';
     if (!data.theme) data.theme = 'claude-light';
+    if (!data.language || (data.language !== 'de' && data.language !== 'en')) {
+      data.language = (typeof window !== 'undefined' && window.i18n) ? window.i18n.detectDefaultLanguage() : 'en';
+    }
+
+    // Sanitize any legacy mood labels
+    if (Array.isArray(data.checkIns)) {
+      data.checkIns.forEach(c => {
+        if (c.mood === 'calm') c.mood = 'peaceful';
+        if (c.moodLabel === 'mood_calm' || c.moodLabel === 'calm') c.moodLabel = 'Peaceful';
+        if (c.moodLabel === 'mood_proud') c.moodLabel = 'Proud';
+      });
+    }
 
     // Upgrade schema if needed
     data.schemaVersion = CURRENT_SCHEMA_VERSION;
@@ -193,17 +209,26 @@ class StorageService {
   saveApp(appData) {
     const apps = [...(this.data.apps || [])];
     const index = apps.findIndex(a => a.id === appData.id);
+    const isNeverPaid = Boolean(appData.neverPaid || Number(appData.monthlyCost) === 0);
+    const resolvedCost = isNeverPaid ? 0 : (Number(appData.monthlyCost) || 0);
 
     if (index >= 0) {
-      apps[index] = { ...apps[index], ...appData };
+      apps[index] = {
+        ...apps[index],
+        ...appData,
+        monthlyCost: resolvedCost,
+        neverPaid: isNeverPaid
+      };
     } else {
       apps.push({
         id: appData.id || `app-${Date.now()}`,
         name: appData.name || 'Custom App',
         color: appData.color || '#CC785C',
+        icon: appData.icon || null,
         quitDate: appData.quitDate || new Date().toISOString(),
         dailyMinutes: Number(appData.dailyMinutes) || 45,
-        monthlyCost: Number(appData.monthlyCost) || 0,
+        monthlyCost: resolvedCost,
+        neverPaid: isNeverPaid,
         swipesPerDay: Number(appData.swipesPerDay) || 100,
         motivation: appData.motivation || '',
         active: true,
@@ -353,6 +378,15 @@ class StorageService {
 
   setCurrency(currency) {
     this.data.currency = currency;
+    this.saveData();
+  }
+
+  getLanguage() {
+    return this.data.language || 'en';
+  }
+
+  setLanguage(lang) {
+    this.data.language = (lang === 'de') ? 'de' : 'en';
     this.saveData();
   }
 }
