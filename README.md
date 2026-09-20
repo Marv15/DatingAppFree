@@ -8,6 +8,12 @@ A minimalist habit and sobriety tracker for staying dating-app-free. Styled with
 
 ## ⚡ Quick Start: Run Locally & Connect Your iPhone
 
+> [!IMPORTANT]
+> **HTTPS is required for the offline PWA cache (Service Worker) to work on your phone.**
+> iOS Safari and Android Chrome only activate Service Workers over a secure connection.
+> A plain `http://192.168.x.x:8080` link will open the app, but **will not cache it for offline use**.
+> See the [HTTPS Options](#-https-options-for-offline-installation) section below to enable true offline support.
+
 ### 1. Download or Clone
 ```bash
 git clone https://github.com/Marv15/DatingAppFree.git
@@ -28,14 +34,59 @@ The terminal will automatically detect your local Wi-Fi IP and display:
 =============================================================
 ```
 
-### 3. Resolve & Install on Your Phone (iPhone & Android)
-1. Ensure your phone is connected to the **same Wi-Fi network**.
-2. Click the **"📱 Add to Mobile"** button at the top of your PC's browser window to view the **QR Code**.
-3. Point your phone's **Camera** at the screen and tap the link to open it in your browser.
+### 3. Install on Your Phone (iPhone & Android)
+1. Complete one of the **HTTPS setup options** from the section below.
+2. Open the resulting `https://` URL in Safari (iPhone) or Chrome (Android).
+3. Click the **"📱 Add to Mobile"** button inside the app to view the **QR Code**.
 4. Add to your home screen:
    - **iPhone (Safari)**: Tap the **Share** button (square with arrow) &rarr; **"Add to Home Screen"** &rarr; tap **Add**.
    - **Android (Chrome)**: Tap the **three dots (⋮)** in the top right &rarr; **"Install app"** or **"Add to Home screen"**.
 5. The **FreeTime** app icon is now on your phone's Home Screen! It runs full-screen without browser URL bars, works completely offline, and saves all your streaks locally.
+
+---
+
+## 🔐 HTTPS Options for Offline Installation
+
+The Service Worker (responsible for offline caching) only activates on **HTTPS or localhost**.
+Choose the option that fits your setup:
+
+### Option A: Tailscale (Recommended — Private, No Port Forwarding)
+[Tailscale](https://tailscale.com/) creates an encrypted, private WireGuard VPN between your devices. Your PC becomes reachable from your phone via a stable `https://` address — no port forwarding or router configuration needed.
+
+1. **Install Tailscale** on both your Windows PC and your iPhone: https://tailscale.com/download
+2. **Sign in** with the same account on both devices.
+3. Start the local server on your PC as usual (`start.bat` or `node server.js`).
+4. **Enable HTTPS via `tailscale serve`** (requires Tailscale Funnel/Serve, available on all plans):
+   ```powershell
+   tailscale serve --bg http://localhost:8080
+   ```
+   This creates a `https://<your-machine-name>.<tailnet-name>.ts.net` URL with a valid certificate.
+5. Open that `https://` URL on your iPhone in Safari and follow Step 3 above.
+
+**⚠️ VPN must be active on your iPhone** when you first install the PWA for the Service Worker to cache the app. Once cached, the app runs 100% offline even without VPN.
+
+> [!NOTE]
+> Tailscale `serve` reverse-proxies your local server through their HTTPS infrastructure.
+> The Service Worker in this app is coded to handle the server-side redirects that Tailscale's
+> Go file server may introduce (e.g. `/index.html` → `/`), so you won't see Safari's
+> *"Response served by service worker has redirections"* error.
+
+### Option B: GitHub Pages (Easiest — Public, No Setup)
+If you push the repo to GitHub, you can enable GitHub Pages in one click for a permanent free HTTPS URL:
+
+1. Go to: **Settings → Pages → Source**: `Deploy from a branch` → `master` / `/ (root)` → **Save**.
+2. After ~60 seconds your app is live at `https://your-username.github.io/DatingAppFree/`.
+3. Open that URL on your phone, add to Home Screen — done. No PC needs to be running.
+
+### Option C: Local Tunnel (Quick Testing, Temporary URL)
+For short-lived testing without any account or install:
+```powershell
+npx localtunnel --port 8080
+```
+The command prints a `https://` URL you can open on your phone. The URL changes every session.
+
+### Option D: Self-signed Certificate (Advanced)
+Generate a local certificate with [mkcert](https://github.com/FiloSottile/mkcert) and install the CA on your iPhone. This is more involved but keeps everything 100% local and offline.
 
 ---
 
@@ -76,5 +127,5 @@ The terminal will automatically detect your local Wi-Fi IP and display:
 | [`js/milestones.js`](js/milestones.js) | Milestones definitions & neurochemical recovery stages |
 | [`js/qrcode.js`](js/qrcode.js) | Pure standalone SVG QR code generator for instant iPhone scanning |
 | [`manifest.webmanifest`](manifest.webmanifest) | PWA configuration for iOS standalone display |
-| [`sw.js`](sw.js) | Service worker with offline caching |
+| [`sw.js`](sw.js) | Service worker with offline caching (Safari-safe, redirect-resilient) |
 | [`icons/`](icons/) | High-res icons (180x180 Apple touch icon, 192x192, 512x512, SVG) |
