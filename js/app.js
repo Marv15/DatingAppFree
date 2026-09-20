@@ -263,6 +263,7 @@
     btnCheckUpdates: document.getElementById('btn-check-updates'),
     btnExportBackup: document.getElementById('btn-export-backup'),
     btnCopyBackup: document.getElementById('btn-copy-backup'),
+    btnRestoreBackup: document.getElementById('btn-restore-backup'),
     fileImportBackup: document.getElementById('file-import-backup'),
     btnShowIosGuide: document.getElementById('btn-show-ios-guide'),
     modalIosGuide: document.getElementById('modal-ios-guide'),
@@ -2623,8 +2624,13 @@
       });
     }
 
-    // Import Backup
-    if (els.fileImportBackup) {
+    // Restore Backup — button programmatically triggers the hidden file input
+    // (iOS Safari PWA blocks label+display:none pattern; programmatic .click() works instead)
+    if (els.btnRestoreBackup && els.fileImportBackup) {
+      els.btnRestoreBackup.addEventListener('click', () => {
+        els.fileImportBackup.click();
+      });
+
       els.fileImportBackup.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -2633,12 +2639,22 @@
         reader.onload = (event) => {
           const content = event.target.result;
           const result = window.storage.importDataFromJSON(content);
+
+          // Reset so the same file can be re-selected next time
+          els.fileImportBackup.value = '';
+
           if (result.success) {
-            showToast(window.i18n.t('backup_restored_alert', { count: result.count }), 'success');
-            closeModal(els.modalSettings);
-            // Re-apply language if stored in imported backup
+            // Re-render entire UI with restored data
+            renderAll();
+
+            // Re-apply language & theme from the imported backup
             const restoredLang = window.storage.getLanguage();
+            const restoredTheme = window.storage.data.theme || 'claude-light';
             applyLanguage(restoredLang, true);
+            applyTheme(restoredTheme);
+
+            closeModal(els.modalSettings);
+            showToast(window.i18n.t('backup_restored_alert', { count: result.count }), 'success');
           } else {
             showToast(window.i18n.t('backup_restore_error_alert', { error: result.error }), 'warning');
           }

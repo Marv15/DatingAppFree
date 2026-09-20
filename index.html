@@ -689,10 +689,11 @@
           <button id="btn-copy-backup" class="pill-btn" style="width: 100%; justify-content: center;" data-i18n="btn_copy_backup">
             📋 Copy Backup to Clipboard
           </button>
-          <label class="pill-btn" style="width: 100%; justify-content: center; cursor: pointer;" data-i18n="btn_restore_backup">
+          <button id="btn-restore-backup" class="pill-btn" style="width: 100%; justify-content: center;" data-i18n="btn_restore_backup">
             📤 Restore from Backup File
-            <input type="file" id="file-import-backup" accept=".json" style="display: none;">
-          </label>
+          </button>
+          <!-- File input positioned off-screen — iOS Safari PWA requires it NOT to be display:none -->
+          <input type="file" id="file-import-backup" accept=".json" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; top: -9999px; left: -9999px;">
         </div>
       </div>
 
