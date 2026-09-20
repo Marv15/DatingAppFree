@@ -210,6 +210,9 @@
     appInputMinutes: document.getElementById('app-input-minutes'),
     appInputCost: document.getElementById('app-input-cost'),
     appInputNeverPaid: document.getElementById('app-input-never-paid'),
+    appInputRate: document.getElementById('app-input-rate'),
+    appInputSwipes: document.getElementById('app-input-swipes'),
+    appRateHint: document.getElementById('app-rate-hint'),
     appInputMotivation: document.getElementById('app-input-motivation'),
     presetChips: document.querySelectorAll('.preset-chip'),
 
@@ -249,6 +252,15 @@
     personInputMetAt: document.getElementById('person-input-met-at'),
     personInputContact: document.getElementById('person-input-contact'),
     personInputNotes: document.getElementById('person-input-notes'),
+
+    modalCheckin: document.getElementById('modal-checkin'),
+    checkinModalTitle: document.getElementById('checkin-modal-title'),
+    formCheckinEdit: document.getElementById('form-checkin-edit'),
+    checkinEditId: document.getElementById('checkin-edit-id'),
+    editCheckinMood: document.getElementById('edit-checkin-mood'),
+    editMoodPills: document.querySelectorAll('#edit-mood-selector-container .mood-pill'),
+    editCheckinDate: document.getElementById('edit-checkin-date'),
+    editCheckinNote: document.getElementById('edit-checkin-note'),
 
     modalReset: document.getElementById('modal-reset'),
     resetAppName: document.getElementById('reset-app-name'),
@@ -426,6 +438,19 @@
         openModal(els.modalIosGuide);
       });
     }
+
+    // Ensure focused input in any modal is cleanly visible above mobile keyboard
+    document.addEventListener('focusin', (e) => {
+      if (e.target && e.target.matches && e.target.matches('.modal-sheet input, .modal-sheet textarea, .modal-sheet select')) {
+        setTimeout(() => {
+          try {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } catch (_) {
+            e.target.scrollIntoView(false);
+          }
+        }, 280);
+      }
+    });
   }
 
   function openModal(modalEl) {
@@ -605,31 +630,53 @@
 
     const appStories = window.storage.getStoriesForApp(app.id);
     const storyBadgeHtml = appStories.length > 0
-      ? `<button class="app-action-link" data-view-stories-app="${app.id}" title="${appStories.length} Reality Checks">📖 ${appStories.length}</button>`
+      ? `<button type="button" class="app-action-btn app-action-link badge-btn" data-view-stories-app="${app.id}" title="${appStories.length} Reality Checks">📖 ${appStories.length}</button>`
       : '';
 
     const controlsHtml = showAllControls ? `
-      <div class="app-actions">
-        ${storyBadgeHtml}
-        <button class="app-action-link" data-add-story-app="${app.id}">+ Story</button>
-        <button class="app-action-link" data-edit-app="${app.id}">${window.i18n.t('card_btn_edit')}</button>
-        <button class="app-action-link" data-reset-app="${app.id}">${window.i18n.t('card_btn_slip')}</button>
-        <button class="app-action-link danger" data-delete-app="${app.id}">${window.i18n.t('card_btn_delete')}</button>
+      <div class="app-card-footer">
+        <div class="app-actions-primary">
+          ${storyBadgeHtml}
+          <button type="button" class="app-action-btn app-action-link primary" data-add-story-app="${app.id}">
+            <span>✨</span> <span>+ Story</span>
+          </button>
+        </div>
+        <div class="app-actions-secondary">
+          <button type="button" class="app-action-btn app-action-link" data-edit-app="${app.id}" title="${window.i18n.t('card_btn_edit')}">
+            <span>✏️</span> <span>${window.i18n.t('card_btn_edit')}</span>
+          </button>
+          <button type="button" class="app-action-btn app-action-link warning" data-reset-app="${app.id}" title="${window.i18n.t('card_btn_slip')}">
+            <span>⚠️</span> <span>${window.i18n.t('card_btn_slip_short')}</span>
+          </button>
+          <button type="button" class="app-action-btn app-action-link danger" data-delete-app="${app.id}" title="${window.i18n.t('card_btn_delete')}">
+            <span>🗑️</span> <span>${window.i18n.t('card_btn_delete')}</span>
+          </button>
+        </div>
       </div>
     ` : `
-      <div class="app-actions">
-        ${storyBadgeHtml}
-        <button class="app-action-link" data-add-story-app="${app.id}">+ Story</button>
-        <button class="app-action-link" data-reset-app="${app.id}">${window.i18n.t('card_btn_slip_short')}</button>
+      <div class="app-card-footer dashboard-mode">
+        <div class="app-actions-primary">
+          ${storyBadgeHtml}
+          <button type="button" class="app-action-btn app-action-link primary" data-add-story-app="${app.id}">
+            <span>✨</span> <span>+ Story</span>
+          </button>
+        </div>
+        <div class="app-actions-secondary">
+          <button type="button" class="app-action-btn app-action-link warning" data-reset-app="${app.id}" title="${window.i18n.t('card_btn_slip')}">
+            <span>⚠️</span> <span>${window.i18n.t('card_btn_slip_short')}</span>
+          </button>
+        </div>
       </div>
     `;
 
     const isFreeUser = Boolean(app.neverPaid || Number(app.monthlyCost) === 0);
+    const costNum = Number(app.monthlyCost || 0);
+    const costFormatted = (costNum % 1 === 0) ? costNum : costNum.toFixed(2);
     const savedRateStr = isFreeUser
       ? window.i18n.t('card_saved_rate_free', { min: app.dailyMinutes || 45 })
       : window.i18n.t('card_saved_rate', {
           min: app.dailyMinutes || 45,
-          fee: `${currency}${app.monthlyCost || 0}`
+          fee: `${currency}${costFormatted}`
         });
 
     const deletedDateStr = window.i18n.t('card_deleted_on', {
@@ -650,10 +697,12 @@
 
       ${motivationHtml}
 
-      <div class="app-card-metrics">
-        <span>${savedRateStr}</span>
-        ${controlsHtml}
+      <div class="app-card-metrics-row">
+        <span>💰 ${savedRateStr}</span>
+        <span>⚡ ~${app.swipesPerDay || Math.round((app.dailyMinutes || 45) * (app.swipeMultiplier || 2.0))} ${window.i18n.t('card_metric_swipes_day')} (${(app.swipeMultiplier || 2.0).toFixed(1)}/min)</span>
       </div>
+
+      ${controlsHtml}
     `;
 
     // Event listeners for card buttons
@@ -763,7 +812,21 @@
           <span class="checkin-date">${dateStr}</span>
         </div>
         ${entry.note ? `<p class="checkin-note-text">${escapeHtml(entry.note)}</p>` : ''}
+        <div class="checkin-card-footer">
+          <button type="button" class="story-footer-btn" data-edit-checkin="${entry.id}">
+            ✏️ ${window.i18n.t('checkin_btn_edit')}
+          </button>
+          <button type="button" class="story-footer-btn danger" data-delete-checkin="${entry.id}">
+            🗑️ ${window.i18n.t('checkin_btn_delete')}
+          </button>
+        </div>
       `;
+
+      const editBtn = card.querySelector(`[data-edit-checkin="${entry.id}"]`);
+      if (editBtn) editBtn.addEventListener('click', () => openEditCheckInModal(entry.id));
+
+      const deleteBtn = card.querySelector(`[data-delete-checkin="${entry.id}"]`);
+      if (deleteBtn) deleteBtn.addEventListener('click', () => confirmDeleteCheckIn(entry.id));
 
       els.checkinHistoryList.appendChild(card);
     });
@@ -1329,7 +1392,7 @@
             </span>
           </div>
           <div class="progression-track">
-            <div class="progression-fill ${stageConfig.colorClass}" style="width: ${stageConfig.percent}%;"></div>
+            <div class="progression-fill ${stageConfig.colorClass || `stage-${stageConfig.class}`}" style="width: ${stageConfig.percent}%;"></div>
           </div>
           <div class="progression-steps-dots">
             ${stepDotsHtml}
@@ -2006,11 +2069,11 @@
   function getStageConfig(stage) {
     const isDe = window.storage.getLanguage() === 'de';
     const configs = {
-      spontaneous: { level: 1, percent: 20, icon: '⚡', class: 'spontaneous', name: isDe ? 'Einmaliger Funke' : 'One-Time Spark' },
-      casual: { level: 2, percent: 40, icon: '👋', class: 'casual', name: isDe ? 'Flüchtige Bekanntschaft' : 'Casual Acquaintance' },
-      regular: { level: 3, percent: 60, icon: '☕', class: 'regular', name: isDe ? 'Regelmäßiger Kontakt' : 'Regular Contact' },
-      close: { level: 4, percent: 80, icon: '🤝', class: 'close', name: isDe ? 'Engere Verbindung' : 'Close Connection' },
-      romantic: { level: 5, percent: 100, icon: '❤️', class: 'romantic', name: isDe ? 'Romantisches Interesse' : 'Romantic Interest' }
+      spontaneous: { level: 1, percent: 20, icon: '⚡', class: 'spontaneous', colorClass: 'stage-spontaneous', name: isDe ? 'Einmaliger Funke' : 'One-Time Spark' },
+      casual: { level: 2, percent: 40, icon: '👋', class: 'casual', colorClass: 'stage-casual', name: isDe ? 'Flüchtige Bekanntschaft' : 'Casual Acquaintance' },
+      regular: { level: 3, percent: 60, icon: '☕', class: 'regular', colorClass: 'stage-regular', name: isDe ? 'Regelmäßiger Kontakt' : 'Regular Contact' },
+      close: { level: 4, percent: 80, icon: '🤝', class: 'close', colorClass: 'stage-close', name: isDe ? 'Engere Verbindung' : 'Close Connection' },
+      romantic: { level: 5, percent: 100, icon: '❤️', class: 'romantic', colorClass: 'stage-romantic', name: isDe ? 'Romantisches Interesse' : 'Romantic Interest' }
     };
     return configs[stage] || configs.casual;
   }
@@ -2332,8 +2395,8 @@
         <div class="progression-header-row">
           <span class="progression-label">${progLabel}</span>
           <div class="progression-quick-actions">
-            ${cfg.level > 1 ? `<button type="button" class="progression-step-btn" data-demote-person="${person.id}" title="Adjust Stage">▼</button>` : ''}
-            ${cfg.level < 5 ? `<button type="button" class="progression-step-btn" data-advance-person="${person.id}" title="Deepen Stage">▲ ${window.i18n.t('btn_advance_stage')}</button>` : ''}
+            ${cfg.level > 1 ? `<button type="button" class="progression-step-btn" data-demote-person="${person.id}" title="${window.i18n.t('btn_demote_stage')}">▼ ${window.i18n.t('btn_demote_stage')}</button>` : ''}
+            ${cfg.level < 5 ? `<button type="button" class="progression-step-btn" data-advance-person="${person.id}" title="${window.i18n.t('btn_advance_stage')}">▲ ${window.i18n.t('btn_advance_stage')}</button>` : ''}
           </div>
         </div>
         <div class="progression-track">
@@ -2459,9 +2522,24 @@
 
     openModal(els.modalPerson);
 
-    if (focusField === 'dob' && els.personInputDob) setTimeout(() => els.personInputDob.focus(), 150);
-    if (focusField === 'contact' && els.personInputContact) setTimeout(() => els.personInputContact.focus(), 150);
-    if (focusField === 'notes' && els.personInputNotes) setTimeout(() => els.personInputNotes.focus(), 150);
+    if (focusField === 'dob' && els.personInputDob) {
+      setTimeout(() => {
+        els.personInputDob.focus();
+        els.personInputDob.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
+    if (focusField === 'contact' && els.personInputContact) {
+      setTimeout(() => {
+        els.personInputContact.focus();
+        els.personInputContact.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
+    if (focusField === 'notes' && els.personInputNotes) {
+      setTimeout(() => {
+        els.personInputNotes.focus();
+        els.personInputNotes.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
   }
 
   function savePersonFromModal() {
@@ -2504,6 +2582,44 @@
   }
 
   // --- APP MANAGEMENT MODAL ---
+  let userManuallyChangedRate = false;
+
+  function parseDecimal(val, fallback = 0) {
+    if (val === undefined || val === null) return fallback;
+    const str = String(val).trim().replace(',', '.');
+    if (str === '') return fallback;
+    const num = parseFloat(str);
+    return isNaN(num) ? fallback : num;
+  }
+
+  function updateModalSwipesPreview() {
+    if (!els.appInputMinutes || !els.appInputRate || !els.appInputSwipes) return;
+    const mins = parseDecimal(els.appInputMinutes.value, 0);
+    const rate = parseDecimal(els.appInputRate.value, 0);
+    const est = Math.round(mins * rate);
+    els.appInputSwipes.value = est.toString();
+  }
+
+  function sanitizeDecimalInput(inputEl, callback) {
+    if (!inputEl) return;
+    inputEl.addEventListener('input', (e) => {
+      const orig = e.target.value;
+      let cleaned = orig.replace(/[^0-9.,]/g, '');
+      const match = cleaned.match(/[.,]/);
+      if (match) {
+        const firstIndex = match.index;
+        const sep = match[0];
+        const before = cleaned.slice(0, firstIndex);
+        const after = cleaned.slice(firstIndex + 1).replace(/[.,]/g, '');
+        cleaned = before + sep + after;
+      }
+      if (cleaned !== orig) {
+        e.target.value = cleaned;
+      }
+      if (callback) callback();
+    });
+  }
+
   function setupAppSettings() {
     if (els.btnAddApp) {
       els.btnAddApp.addEventListener('click', () => openAddAppModal());
@@ -2531,7 +2647,38 @@
             els.appInputCost.value = chip.dataset.cost;
           }
         }
+        if (chip.dataset.rate && els.appInputRate) {
+          els.appInputRate.value = chip.dataset.rate;
+          userManuallyChangedRate = false;
+        }
+        updateModalSwipesPreview();
       });
+    });
+
+    // App Name input listener - auto-detects app rate unless user manually adjusted rate
+    if (els.appInputName) {
+      els.appInputName.addEventListener('input', (e) => {
+        if (!userManuallyChangedRate && els.appInputRate) {
+          const val = e.target.value.trim();
+          const rate = window.storage.getSwipeMultiplierForApp(val);
+          els.appInputRate.value = rate.toString();
+          updateModalSwipesPreview();
+        }
+      });
+    }
+
+    // Minutes input listener
+    if (els.appInputMinutes) {
+      els.appInputMinutes.addEventListener('input', () => {
+        updateModalSwipesPreview();
+      });
+    }
+
+    // Swipe rate & cost input sanitizers (allows 24,99 or 24.99 cleanly)
+    sanitizeDecimalInput(els.appInputCost);
+    sanitizeDecimalInput(els.appInputRate, () => {
+      userManuallyChangedRate = true;
+      updateModalSwipesPreview();
     });
 
     // Never paid toggle listener
@@ -2544,7 +2691,7 @@
         } else {
           els.appInputCost.disabled = false;
           els.appInputCost.style.opacity = '1';
-          if (parseFloat(els.appInputCost.value) === 0) {
+          if (parseDecimal(els.appInputCost.value, 0) === 0) {
             els.appInputCost.value = '25';
           }
         }
@@ -2694,6 +2841,11 @@
     if (els.appInputNeverPaid) {
       els.appInputNeverPaid.checked = false;
     }
+    userManuallyChangedRate = false;
+    if (els.appInputRate) {
+      els.appInputRate.value = (window.storage.DEFAULT_SWIPE_RATE || 2.0).toString();
+    }
+    updateModalSwipesPreview();
     els.appInputMotivation.value = '';
 
     // Set default quit date to right now formatted for datetime-local
@@ -2727,10 +2879,20 @@
       els.appInputCost.disabled = true;
       els.appInputCost.style.opacity = '0.5';
     } else {
-      els.appInputCost.value = app.monthlyCost || 25;
+      els.appInputCost.value = (app.monthlyCost !== undefined) ? String(app.monthlyCost) : '25';
       els.appInputCost.disabled = false;
       els.appInputCost.style.opacity = '1';
     }
+
+    userManuallyChangedRate = false;
+    const currentRate = app.swipeMultiplier || window.storage.getSwipeMultiplierForApp(app.name) || 2.0;
+    if (els.appInputRate) {
+      els.appInputRate.value = currentRate.toString();
+    }
+    if (els.appInputSwipes) {
+      els.appInputSwipes.value = (app.swipesPerDay || Math.round((app.dailyMinutes || 45) * currentRate)).toString();
+    }
+
     els.appInputMotivation.value = app.motivation || '';
 
     // Format app quit date for datetime-local
@@ -2745,10 +2907,14 @@
     const id = els.appEditId.value || `app-${Date.now()}`;
     const name = els.appInputName.value.trim();
     const quitDateValue = els.appInputQuitdate.value;
-    const dailyMinutes = parseFloat(els.appInputMinutes.value) || 45;
+    const dailyMinutes = parseDecimal(els.appInputMinutes.value, 45);
     const neverPaid = els.appInputNeverPaid ? els.appInputNeverPaid.checked : false;
-    const monthlyCost = neverPaid ? 0 : (parseFloat(els.appInputCost.value) || 0);
+    const monthlyCost = neverPaid ? 0 : parseDecimal(els.appInputCost.value, 0);
     const motivation = els.appInputMotivation.value.trim();
+    const swipeMultiplier = (els.appInputRate && parseDecimal(els.appInputRate.value, 0) > 0)
+      ? parseDecimal(els.appInputRate.value, 0)
+      : window.storage.getSwipeMultiplierForApp(name);
+    const swipesPerDay = Math.round(dailyMinutes * swipeMultiplier);
 
     if (!name || !quitDateValue) {
       showToast(window.i18n.t('alert_app_missing_fields'), 'warning');
@@ -2774,6 +2940,8 @@
       dailyMinutes,
       monthlyCost,
       neverPaid,
+      swipeMultiplier,
+      swipesPerDay,
       motivation
     });
 
@@ -2973,6 +3141,97 @@
         renderJournalView();
         showToast(window.i18n.t('journal_saved_alert'), 'success');
       });
+    }
+
+    // Edit Check-in Mood selector
+    if (els.editMoodPills) {
+      els.editMoodPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          els.editMoodPills.forEach(p => p.classList.remove('selected'));
+          pill.classList.add('selected');
+          if (els.editCheckinMood) {
+            els.editCheckinMood.value = pill.dataset.editMood;
+          }
+        });
+      });
+    }
+
+    // Edit Check-in Form submit
+    if (els.formCheckinEdit) {
+      els.formCheckinEdit.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = els.checkinEditId.value;
+        if (!id) return;
+
+        const mood = els.editCheckinMood ? els.editCheckinMood.value : 'peaceful';
+        const selectedPill = document.querySelector(`#edit-mood-selector-container .mood-pill[data-edit-mood="${mood}"]`);
+        const emoji = selectedPill ? selectedPill.dataset.emoji : '🌿';
+        const moodLabel = selectedPill ? selectedPill.dataset.label : 'Peaceful';
+        const note = els.editCheckinNote ? els.editCheckinNote.value.trim() : '';
+        const dateVal = els.editCheckinDate ? els.editCheckinDate.value : '';
+        const timestamp = dateVal ? new Date(dateVal).toISOString() : new Date().toISOString();
+
+        window.storage.updateCheckIn(id, {
+          mood,
+          emoji,
+          moodLabel,
+          note,
+          timestamp
+        });
+
+        closeModal(els.modalCheckin);
+        renderJournalView();
+        showToast(window.i18n.t('checkin_updated_alert'), 'success');
+      });
+    }
+  }
+
+  function openEditCheckInModal(checkinId) {
+    const entry = window.storage.getCheckIn(checkinId);
+    if (!entry) return;
+
+    if (els.checkinEditId) els.checkinEditId.value = entry.id;
+
+    // Set mood
+    let currentMood = (entry.mood || 'peaceful').toLowerCase();
+    if (currentMood === 'calm') currentMood = 'peaceful';
+    if (els.editCheckinMood) els.editCheckinMood.value = currentMood;
+
+    if (els.editMoodPills) {
+      els.editMoodPills.forEach(pill => {
+        const pillMood = pill.dataset.editMood;
+        if (pillMood === currentMood) {
+          pill.classList.add('selected');
+        } else {
+          pill.classList.remove('selected');
+        }
+      });
+    }
+
+    // Format datetime for datetime-local input (YYYY-MM-DDTHH:mm)
+    if (entry.timestamp && els.editCheckinDate) {
+      const d = new Date(entry.timestamp);
+      if (!isNaN(d.getTime())) {
+        const pad = (n) => String(n).padStart(2, '0');
+        const localIso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        els.editCheckinDate.value = localIso;
+      } else {
+        els.editCheckinDate.value = '';
+      }
+    } else if (els.editCheckinDate) {
+      els.editCheckinDate.value = '';
+    }
+
+    if (els.editCheckinNote) els.editCheckinNote.value = entry.note || '';
+
+    openModal(els.modalCheckin);
+  }
+
+  function confirmDeleteCheckIn(checkinId) {
+    if (confirm(window.i18n.t('confirm_delete_checkin'))) {
+      window.storage.deleteCheckIn(checkinId);
+      renderJournalView();
+      showToast(window.i18n.t('checkin_deleted_alert'), 'warning');
     }
   }
 

@@ -5,6 +5,53 @@ const STORAGE_KEY = 'dating_app_free_data_v2';
 const BACKUP_KEY = 'dating_app_free_auto_backup';
 const CURRENT_SCHEMA_VERSION = 2;
 
+// Realistic swipe multipliers (swipes per active minute) based on real app mechanics:
+// - Fast card deck / rapid swipe mechanic (Tinder, Badoo): ~3.0 swipes/min
+// - Grid browse & rapid profiles (Grindr, Lovoo): ~2.5 swipes/min
+// - Reading bio & question prompts (Bumble): ~2.2 swipes/min
+// - Specialized / couples / alternative (Feeld): ~1.6 swipes/min
+// - Deep personality / questions (Boo, OkCupid, Match): ~1.4 - 1.5 swipes/min
+// - Thoughtful prompts, required media likes, no rapid card deck (Hinge): ~1.2 swipes/min
+// - Serious matchmaking / extensive questionnaires (Parship, ElitePartner): ~1.0 swipes/min
+const APP_SWIPE_RATES = {
+  'tinder': 3.0,
+  'badoo': 3.0,
+  'grindr': 2.5,
+  'bumble': 2.2,
+  'lovoo': 2.5,
+  'jaumo': 2.5,
+  'fruitz': 2.2,
+  'feeld': 1.6,
+  'boo': 1.5,
+  'okcupid': 1.4,
+  'match': 1.4,
+  'parship': 1.0,
+  'elitepartner': 1.0,
+  'hinge': 1.2
+};
+
+// Default multiplier for any custom / unlisted user-added app
+const DEFAULT_SWIPE_RATE = 2.0;
+
+function getSwipeMultiplierForApp(name) {
+  if (!name || typeof name !== 'string') return DEFAULT_SWIPE_RATE;
+  const lower = name.trim().toLowerCase();
+  for (const [key, rate] of Object.entries(APP_SWIPE_RATES)) {
+    if (lower.includes(key)) {
+      return rate;
+    }
+  }
+  return DEFAULT_SWIPE_RATE;
+}
+
+function calculateSwipesPerDay(dailyMinutes, customMultiplier, appName = '') {
+  const minutes = Math.max(0, Number(dailyMinutes) || 0);
+  const multiplier = (customMultiplier !== undefined && customMultiplier !== null && Number(customMultiplier) > 0)
+    ? Number(customMultiplier)
+    : getSwipeMultiplierForApp(appName);
+  return Math.round(minutes * multiplier);
+}
+
 // Default initial state for new users
 function getDefaultState() {
   const now = Date.now();
@@ -25,7 +72,8 @@ function getDefaultState() {
         quitDate: new Date(now - 14 * day - 8 * 3600 * 1000).toISOString(),
         dailyMinutes: 45,
         monthlyCost: 24.99,
-        swipesPerDay: 120,
+        swipeMultiplier: 3.0,
+        swipesPerDay: 135,
         motivation: 'Mindless dopamine scrolling and superficial snap judgments. Tired of feeling like a product on a catalog.',
         active: true,
         history: []
@@ -38,7 +86,8 @@ function getDefaultState() {
         quitDate: new Date(now - 7 * day - 4 * 3600 * 1000).toISOString(),
         dailyMinutes: 30,
         monthlyCost: 19.99,
-        swipesPerDay: 70,
+        swipeMultiplier: 2.2,
+        swipesPerDay: 66,
         motivation: 'Tired of 24h countdown anxiety and conversations that dry up after two exchanges.',
         active: true,
         history: []
@@ -51,7 +100,8 @@ function getDefaultState() {
         quitDate: new Date(now - 3 * day - 12 * 3600 * 1000).toISOString(),
         dailyMinutes: 45,
         monthlyCost: 29.99,
-        swipesPerDay: 60,
+        swipeMultiplier: 1.2,
+        swipesPerDay: 54,
         motivation: 'Felt like a second unpaid job. Crafting prompt answers and scheduling dates with people who flake at the last minute.',
         active: true,
         history: []
@@ -218,6 +268,26 @@ class StorageService {
     data.schemaVersion = CURRENT_SCHEMA_VERSION;
     data.lastUpdated = new Date().toISOString();
 
+    // Ensure all apps have realistic swipe multipliers and up-to-date swipesPerDay
+    if (Array.isArray(data.apps)) {
+      data.apps.forEach(app => {
+        if (!app.swipeMultiplier || Number(app.swipeMultiplier) <= 0) {
+          app.swipeMultiplier = getSwipeMultiplierForApp(app.name);
+        }
+        const nameLower = (app.name || '').toLowerCase();
+        const isLegacyDefaultVal =
+          !app.swipesPerDay ||
+          app.swipesPerDay === 100 ||
+          (app.swipesPerDay === 120 && nameLower.includes('tinder')) ||
+          (app.swipesPerDay === 70 && nameLower.includes('bumble')) ||
+          (app.swipesPerDay === 60 && nameLower.includes('hinge'));
+
+        if (isLegacyDefaultVal) {
+          app.swipesPerDay = calculateSwipesPerDay(app.dailyMinutes || 45, app.swipeMultiplier, app.name);
+        }
+      });
+    }
+
     return data;
   }
 
@@ -260,6 +330,23 @@ class StorageService {
     return null;
   }
 
+  // --- Swipe Rate Utilities ---
+  getSwipeMultiplierForApp(name) {
+    return getSwipeMultiplierForApp(name);
+  }
+
+  calculateSwipesPerDay(dailyMinutes, customMultiplier, appName = '') {
+    return calculateSwipesPerDay(dailyMinutes, customMultiplier, appName);
+  }
+
+  get DEFAULT_SWIPE_RATE() {
+    return DEFAULT_SWIPE_RATE;
+  }
+
+  get APP_SWIPE_RATES() {
+    return APP_SWIPE_RATES;
+  }
+
   // --- App Management ---
 
   getApps() {
@@ -277,27 +364,57 @@ class StorageService {
   saveApp(appData) {
     const apps = [...(this.data.apps || [])];
     const index = apps.findIndex(a => a.id === appData.id);
-    const isNeverPaid = Boolean(appData.neverPaid || Number(appData.monthlyCost) === 0);
-    const resolvedCost = isNeverPaid ? 0 : (Number(appData.monthlyCost) || 0);
+
+    let rawCost = appData.monthlyCost;
+    if (typeof rawCost === 'string') {
+      rawCost = parseFloat(rawCost.replace(',', '.'));
+    }
+    const isNeverPaid = Boolean(appData.neverPaid || Number(rawCost) === 0);
+    const resolvedCost = (isNeverPaid || isNaN(Number(rawCost))) ? 0 : Math.max(0, Number(rawCost));
+
+    let rawMinutes = appData.dailyMinutes;
+    if (typeof rawMinutes === 'string') {
+      rawMinutes = parseFloat(rawMinutes.replace(',', '.'));
+    }
+    const dailyMinutes = Math.max(0, Number(rawMinutes) || 45);
+
+    const appName = appData.name || 'Custom App';
+
+    let rawMultiplier = appData.swipeMultiplier;
+    if (typeof rawMultiplier === 'string') {
+      rawMultiplier = parseFloat(rawMultiplier.replace(',', '.'));
+    }
+    const swipeMultiplier = (rawMultiplier !== undefined && rawMultiplier !== null && Number(rawMultiplier) > 0)
+      ? Number(rawMultiplier)
+      : getSwipeMultiplierForApp(appName);
+
+    const swipesPerDay = (appData.swipesPerDay !== undefined && appData.swipesPerDay !== null && Number(appData.swipesPerDay) > 0)
+      ? Number(appData.swipesPerDay)
+      : calculateSwipesPerDay(dailyMinutes, swipeMultiplier, appName);
 
     if (index >= 0) {
       apps[index] = {
         ...apps[index],
         ...appData,
+        name: appName,
+        dailyMinutes,
         monthlyCost: resolvedCost,
-        neverPaid: isNeverPaid
+        neverPaid: isNeverPaid,
+        swipeMultiplier,
+        swipesPerDay
       };
     } else {
       apps.push({
         id: appData.id || `app-${Date.now()}`,
-        name: appData.name || 'Custom App',
+        name: appName,
         color: appData.color || '#CC785C',
         icon: appData.icon || null,
         quitDate: appData.quitDate || new Date().toISOString(),
-        dailyMinutes: Number(appData.dailyMinutes) || 45,
+        dailyMinutes,
         monthlyCost: resolvedCost,
         neverPaid: isNeverPaid,
-        swipesPerDay: Number(appData.swipesPerDay) || 100,
+        swipeMultiplier,
+        swipesPerDay,
         motivation: appData.motivation || '',
         active: true,
         history: []
@@ -394,6 +511,10 @@ class StorageService {
     return (this.data.checkIns || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }
 
+  getCheckIn(id) {
+    return (this.data.checkIns || []).find(c => c.id === id) || null;
+  }
+
   addCheckIn(entry) {
     const newEntry = {
       id: `chk-${Date.now()}`,
@@ -407,6 +528,20 @@ class StorageService {
     this.data.checkIns = [newEntry, ...(this.data.checkIns || [])];
     this.saveData();
     return newEntry;
+  }
+
+  updateCheckIn(id, updated) {
+    const list = this.data.checkIns || [];
+    const idx = list.findIndex(c => c.id === id);
+    if (idx !== -1) {
+      list[idx] = {
+        ...list[idx],
+        ...updated
+      };
+      this.saveData();
+      return list[idx];
+    }
+    return null;
   }
 
   deleteCheckIn(id) {

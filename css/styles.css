@@ -816,41 +816,97 @@ body {
   margin-bottom: 3px;
 }
 
+.app-card-metrics-row,
 .app-card-metrics {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
   font-size: 0.76rem;
   color: var(--text-muted);
 }
 
-.app-actions {
+.app-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.app-actions,
+.app-actions-primary,
+.app-actions-secondary {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
+.app-action-btn,
 .app-action-link {
-  background: none;
-  border: none;
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary);
   cursor: pointer;
-  padding: 3px 6px;
-  border-radius: var(--radius-sm);
-  transition: color var(--transition-fast);
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  text-decoration: none;
 }
 
-.app-action-link:hover, .app-action-link:active {
-  color: var(--text-primary);
+.app-action-btn:hover,
+.app-action-link:hover {
   background: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
 }
 
-.app-action-link.danger:hover, .app-action-link.danger:active {
-  color: var(--danger);
+.app-action-btn.primary,
+.app-action-link.primary {
+  background: var(--accent-soft);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.app-action-btn.primary:hover,
+.app-action-link.primary:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.app-action-btn.warning:hover,
+.app-action-link.warning:hover {
+  background: rgba(245, 158, 11, 0.12);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.app-action-btn.danger:hover,
+.app-action-link.danger:hover {
   background: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.app-action-btn.badge-btn,
+.app-action-link.badge-btn {
+  background: var(--bg-subtle);
+  font-weight: 600;
+  padding: 4px 8px;
 }
 
 /* ==========================================================================
@@ -1059,6 +1115,16 @@ body {
   font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.42;
+}
+
+.checkin-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 /* ==========================================================================
@@ -2054,6 +2120,7 @@ body {
   color: var(--text-primary);
   padding: 2px 8px;
   cursor: pointer;
+  white-space: nowrap;
   transition: all var(--transition-fast);
 }
 
@@ -2079,6 +2146,7 @@ body {
 .progression-fill {
   height: 100%;
   border-radius: 4px;
+  background: var(--accent, #3B82F6);
   transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color var(--transition-fast);
 }
 
@@ -2375,15 +2443,58 @@ body {
   background: var(--bg-surface);
   width: 100%;
   max-width: 520px;
-  max-height: 88vh;
+  max-height: 90vh;
+  max-height: 90dvh;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   border-top: 1px solid var(--border-subtle);
-  padding: 20px 22px 36px 22px;
+  padding: 16px 20px max(18px, env(safe-area-inset-bottom, 18px)) 20px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
   box-shadow: var(--shadow-lg);
   animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-sheet form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.modal-sheet-content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-right: 0;
+  padding-bottom: 28px;
+  scroll-padding-bottom: 100px;
+}
+
+.modal-sheet-footer {
+  flex-shrink: 0;
+  display: flex;
+  gap: 10px;
+  padding-top: 12px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .sheet-handle {
@@ -2391,7 +2502,8 @@ body {
   height: 4px;
   border-radius: var(--radius-pill);
   background: var(--border-medium);
-  margin: 0 auto 16px auto;
+  margin: 0 auto 12px auto;
+  flex-shrink: 0;
 }
 
 .sheet-header {
@@ -2533,6 +2645,10 @@ body {
 
 .form-group {
   margin-bottom: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .form-label {
@@ -2544,7 +2660,13 @@ body {
 }
 
 .form-control {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  scroll-margin-bottom: 90px;
+  scroll-margin-top: 20px;
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -2560,10 +2682,59 @@ body {
   border-color: var(--border-focus);
 }
 
+/* Specific styling for Date & Datetime inputs to eliminate iOS Safari / WebKit native width blowouts */
+input[type="datetime-local"].form-control,
+input[type="date"].form-control,
+input[type="time"].form-control {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  min-height: 42px;
+  line-height: normal;
+}
+
+/* Fix text alignment & internal padding inside iOS Safari datepicker shadow DOM */
+input[type="datetime-local"].form-control::-webkit-date-and-time-value,
+input[type="date"].form-control::-webkit-date-and-time-value,
+input[type="time"].form-control::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.25em;
+  padding: 0;
+  margin: 0;
+}
+
+/* Specific styling for Textareas to fit 100% container width & disable horizontal overflow */
+textarea.form-control {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  resize: vertical;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.45;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.form-row > .form-group {
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: 0;
 }
 
 .form-help {
@@ -2575,9 +2746,18 @@ body {
 /* Preset App Chips */
 .preset-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   gap: 6px;
-  margin-bottom: 12px;
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+}
+
+.preset-chips::-webkit-scrollbar {
+  display: none;
 }
 
 .preset-chip {
@@ -2915,6 +3095,189 @@ body {
   #person-stage-selector-container {
     grid-template-columns: 1fr;
     gap: 6px;
+  }
+
+  /* Reflection Card Footer Polish on Phones */
+  .checkin-card-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .checkin-card-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* App Card Mobile Footer & Button Layout */
+  .app-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .app-actions-primary {
+    display: flex;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .app-actions-primary .app-action-btn:not(.badge-btn) {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 12px;
+  }
+
+  .app-actions-secondary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+
+  .app-actions-secondary .app-action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 6px 4px;
+    font-size: 0.72rem;
+  }
+
+  .app-card-footer.dashboard-mode {
+    flex-direction: row;
+  }
+
+  .app-card-footer.dashboard-mode .app-actions-primary {
+    flex: 1;
+  }
+
+  .app-card-footer.dashboard-mode .app-actions-secondary {
+    display: flex;
+    flex: 1;
+    width: auto;
+  }
+
+  .app-card-footer.dashboard-mode .app-actions-secondary .app-action-btn {
+    flex: 1;
+    padding: 6px 8px;
+  }
+
+  /* Mobile Modal Sheet & Form Responsiveness */
+  .modal-sheet {
+    max-height: 92vh;
+    max-height: 92dvh;
+    padding: 14px 16px max(16px, env(safe-area-inset-bottom, 16px)) 16px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .modal-sheet form {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .modal-sheet-content {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    padding-right: 0;
+    padding-bottom: 36px;
+    scroll-padding-bottom: 110px;
+  }
+
+  .sheet-handle {
+    margin: 0 auto 10px auto;
+  }
+
+  .sheet-header {
+    margin-bottom: 10px;
+  }
+
+  .sheet-title {
+    font-size: 1.15rem;
+  }
+
+  .form-group {
+    margin-bottom: 9px;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-row {
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-row > .form-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .form-label {
+    font-size: 0.74rem;
+    margin-bottom: 3px;
+  }
+
+  .form-control {
+    display: block;
+    font-size: 16px !important; /* Prevents iOS Safari camera auto-zoom on input focus */
+    padding: 8px 11px;
+    border-radius: var(--radius-sm);
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    scroll-margin-bottom: 90px;
+  }
+
+  input[type="datetime-local"].form-control,
+  input[type="date"].form-control,
+  input[type="time"].form-control {
+    min-height: 38px;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  textarea.form-control {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    resize: vertical;
+  }
+
+  .form-help {
+    font-size: 0.68rem;
+    margin-top: 2px;
+    line-height: 1.25;
+  }
+
+  .modal-sheet-footer {
+    padding-top: 10px;
+    margin-top: 6px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .modal-sheet-footer .pill-btn {
+    padding: 9px 12px;
+    font-size: 0.85rem;
   }
 }
 
