@@ -10,7 +10,7 @@ A minimalist habit and sobriety tracker for staying dating-app-free. Styled with
 
 ### 1. Download or Clone
 ```bash
-git clone https://github.com/your-username/DatingAppFree.git
+git clone https://github.com/Marv15/DatingAppFree.git
 cd DatingAppFree
 ```
 
