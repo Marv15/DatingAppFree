@@ -62,8 +62,10 @@ Choose the option that fits your setup:
    ```
    This creates a `https://<your-machine-name>.<tailnet-name>.ts.net` URL with a valid certificate.
 5. Open that `https://` URL on your iPhone in Safari and follow Step 3 above.
+6. **Open the app once from the Home Screen with Tailscale/VPN active** — this lets the Service Worker cache all assets on your device.
 
-**⚠️ VPN must be active on your iPhone** when you first install the PWA for the Service Worker to cache the app. Once cached, the app runs 100% offline even without VPN.
+**After that one-time load, the app works completely offline without VPN.** 🎉  
+iOS caches the DNS response for the Tailscale domain, and the Service Worker serves everything from local device storage — no network connection needed at all.
 
 > [!NOTE]
 > Tailscale `serve` reverse-proxies your local server through their HTTPS infrastructure.
