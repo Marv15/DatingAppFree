@@ -167,6 +167,53 @@
               Your saved time is equivalent to reading <strong id="insight-books">0 books</strong> or completing <strong id="insight-workouts">0 gym workouts</strong> in the real world.
             </div>
           </div>
+
+          <!-- Real-World Spark Showcase (Always visible on first page) -->
+          <div class="dash-moment-card" id="dash-moment-container">
+            <div class="dash-moment-header">
+              <div class="dash-moment-badge-group">
+                <span class="dash-moment-badge">
+                  <span>✨</span>
+                  <span data-i18n="dash_moment_badge">Real-World Spark</span>
+                </span>
+                <span id="dash-moment-category" class="dash-moment-category-tag">☕ Spontaneous Chat</span>
+              </div>
+              <div class="dash-moment-actions">
+                <button type="button" id="btn-next-dash-moment" class="dash-action-icon-btn" data-i18n-title="dash_moment_btn_next" title="Next Spark">
+                  🔄
+                </button>
+                <button type="button" id="btn-add-dash-moment" class="dash-action-icon-btn" data-i18n-title="dash_moment_btn_add" title="Add Real Moment">
+                  ➕
+                </button>
+              </div>
+            </div>
+
+            <div class="dash-moment-body">
+              <div class="dash-moment-meta">
+                <span id="dash-moment-location" class="dash-moment-location">📍 Local Café</span>
+                <span id="dash-moment-date" class="dash-moment-date">Yesterday</span>
+              </div>
+              <p id="dash-moment-story" class="dash-moment-story">
+                "Instead of staring down at my phone while waiting for my coffee, I smiled and complimented someone on their vintage coat. We had a lovely 5-minute chat."
+              </p>
+              <div class="dash-moment-feeling-box">
+                <div class="dash-moment-feeling-header">
+                  <span>💡</span>
+                  <span data-i18n="dash_moment_how_felt">How it felt:</span>
+                </div>
+                <div id="dash-moment-feeling" class="dash-moment-feeling-text">
+                  A spontaneous 5-minute real conversation gave me more genuine warmth than hundreds of matches on an app.
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-moment-footer">
+              <span id="dash-moment-count-label" class="dash-moment-count">1 of 2 sparks</span>
+              <button type="button" id="btn-goto-moments" class="dash-moment-link">
+                <span data-i18n="dash_moment_btn_view_all">View All Sparks</span> &rarr;
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Secondary Column: Tracked Apps Preview & Quick Actions -->
@@ -213,52 +260,136 @@
 
     <!-- MAIN VIEW 4: JOURNAL & REFLECTION -->
     <main id="view-journal" class="view-panel hidden">
-      <div class="journal-grid">
-        <div class="journal-col-form">
-          <!-- Check-In Form Card -->
-          <section class="checkin-prompt-card">
-            <h3 class="section-title" style="font-size: 1.05rem;" data-i18n="section_daily_checkin">Daily Check-In</h3>
-            <p class="form-help" data-i18n="checkin_prompt">How is your mind feeling today without dating apps?</p>
+      <!-- Journal Segment Switcher (Reflections vs Reality Checks vs Real-World Sparks) -->
+      <div class="journal-segment-wrapper">
+        <div class="journal-segmented-nav">
+          <button type="button" class="journal-seg-btn active" id="seg-btn-reflections" data-segment="reflections">
+            <span data-i18n="journal_tab_checkin">🌿 Daily Reflections</span>
+          </button>
+          <button type="button" class="journal-seg-btn" id="seg-btn-stories" data-segment="stories">
+            <span id="journal-stories-tab-label" data-i18n="journal_tab_stories">📖 Reality Checks</span>
+          </button>
+          <button type="button" class="journal-seg-btn" id="seg-btn-moments" data-segment="moments">
+            <span id="journal-moments-tab-label" data-i18n="journal_tab_moments">✨ Real Sparks</span>
+          </button>
+          <button type="button" class="journal-seg-btn" id="seg-btn-people" data-segment="people">
+            <span id="journal-people-tab-label" data-i18n="journal_tab_people">👥 Connections</span>
+          </button>
+        </div>
+      </div>
 
-            <div class="mood-selector" id="mood-selector-container">
-              <div class="mood-pill selected" data-mood="peaceful" data-emoji="🌿" data-label="Peaceful">
-                <span class="mood-emoji">🌿</span>
-                <span class="mood-name" data-i18n="mood_peaceful">Peaceful</span>
+      <!-- Sub-view 1: Daily Check-In & History -->
+      <div id="journal-sub-reflections" class="journal-sub-panel">
+        <div class="journal-grid">
+          <div class="journal-col-form">
+            <!-- Check-In Form Card -->
+            <section class="checkin-prompt-card">
+              <h3 class="section-title" style="font-size: 1.05rem;" data-i18n="section_daily_checkin">Daily Check-In</h3>
+              <p class="form-help" data-i18n="checkin_prompt">How is your mind feeling today without dating apps?</p>
+
+              <div class="mood-selector" id="mood-selector-container">
+                <div class="mood-pill selected" data-mood="peaceful" data-emoji="🌿" data-label="Peaceful">
+                  <span class="mood-emoji">🌿</span>
+                  <span class="mood-name" data-i18n="mood_peaceful">Peaceful</span>
+                </div>
+                <div class="mood-pill" data-mood="energized" data-emoji="⚡" data-label="Energized">
+                  <span class="mood-emoji">⚡</span>
+                  <span class="mood-name" data-i18n="mood_energized">Energized</span>
+                </div>
+                <div class="mood-pill" data-mood="grounded" data-emoji="✨" data-label="Grounded">
+                  <span class="mood-emoji">✨</span>
+                  <span class="mood-name" data-i18n="mood_grounded">Grounded</span>
+                </div>
+                <div class="mood-pill" data-mood="lonely" data-emoji="🌧️" data-label="Lonely">
+                  <span class="mood-emoji">🌧️</span>
+                  <span class="mood-name" data-i18n="mood_lonely">Lonely</span>
+                </div>
+                <div class="mood-pill" data-mood="tempted" data-emoji="🔥" data-label="Tempted">
+                  <span class="mood-emoji">🔥</span>
+                  <span class="mood-name" data-i18n="mood_tempted">Tempted</span>
+                </div>
               </div>
-              <div class="mood-pill" data-mood="energized" data-emoji="⚡" data-label="Energized">
-                <span class="mood-emoji">⚡</span>
-                <span class="mood-name" data-i18n="mood_energized">Energized</span>
-              </div>
-              <div class="mood-pill" data-mood="grounded" data-emoji="✨" data-label="Grounded">
-                <span class="mood-emoji">✨</span>
-                <span class="mood-name" data-i18n="mood_grounded">Grounded</span>
-              </div>
-              <div class="mood-pill" data-mood="lonely" data-emoji="🌧️" data-label="Lonely">
-                <span class="mood-emoji">🌧️</span>
-                <span class="mood-name" data-i18n="mood_lonely">Lonely</span>
-              </div>
-              <div class="mood-pill" data-mood="tempted" data-emoji="🔥" data-label="Tempted">
-                <span class="mood-emoji">🔥</span>
-                <span class="mood-name" data-i18n="mood_tempted">Tempted</span>
-              </div>
+
+              <textarea id="checkin-note" class="checkin-input" rows="3" data-i18n-placeholder="checkin_placeholder" placeholder="Optional reflection note... What did you notice today?"></textarea>
+
+              <button id="btn-save-checkin" class="pill-btn primary" style="width: 100%; justify-content: center;" data-i18n="btn_save_checkin">
+                Log Today's Reflection
+              </button>
+            </section>
+          </div>
+
+          <div class="journal-col-history">
+            <!-- History -->
+            <section class="section-header">
+              <h3 class="section-title" style="font-size: 1.05rem;" data-i18n="section_reflection_history">Reflection History</h3>
+            </section>
+            <div id="checkin-history-list" class="checkin-timeline">
+              <!-- Rendered dynamically -->
             </div>
+          </div>
+        </div>
+      </div>
 
-            <textarea id="checkin-note" class="checkin-input" rows="3" data-i18n-placeholder="checkin_placeholder" placeholder="Optional reflection note... What did you notice today?"></textarea>
+      <!-- Sub-view 2: Dating App Stories & Reality Checks -->
+      <div id="journal-sub-stories" class="journal-sub-panel hidden">
+        <section class="section-header" style="align-items: flex-start;">
+          <div>
+            <h2 class="section-title" data-i18n="journal_tab_stories_zero">Reality Checks</h2>
+            <p class="form-help" data-i18n="journal_stories_desc">Specific people, bad dates, and ghosting incidents that remind you why algorithmic dating is soul-draining.</p>
+          </div>
+          <button id="btn-add-story" class="pill-btn primary" style="flex-shrink: 0;" data-i18n="btn_add_story">+ Add Reality Check</button>
+        </section>
 
-            <button id="btn-save-checkin" class="pill-btn primary" style="width: 100%; justify-content: center;" data-i18n="btn_save_checkin">
-              Log Today's Reflection
-            </button>
-          </section>
+        <!-- Filter by App -->
+        <div class="stories-filter-bar" id="stories-filter-bar">
+          <!-- Populated dynamically: All, Tinder, Bumble, Hinge, General -->
         </div>
 
-        <div class="journal-col-history">
-          <!-- History -->
-          <section class="section-header">
-            <h3 class="section-title" style="font-size: 1.05rem;" data-i18n="section_reflection_history">Reflection History</h3>
-          </section>
-          <div id="checkin-history-list" class="checkin-timeline">
-            <!-- Rendered dynamically -->
+        <!-- Stories List -->
+        <div id="stories-list" class="stories-timeline">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Sub-view 3: Real-World Positive Moments & Sparks -->
+      <div id="journal-sub-moments" class="journal-sub-panel hidden">
+        <section class="section-header" style="align-items: flex-start;">
+          <div>
+            <h2 class="section-title" data-i18n="journal_tab_moments_zero">Real Sparks</h2>
+            <p class="form-help" data-i18n="journal_moments_desc">Genuine real-world interactions, romantic sparks, and spontaneous conversations that remind you why offline life is vibrant.</p>
           </div>
+          <button id="btn-add-moment" class="pill-btn primary" style="flex-shrink: 0;" data-i18n="btn_add_moment">+ Add Real Moment</button>
+        </section>
+
+        <!-- Filter by Category -->
+        <div class="stories-filter-bar" id="moments-filter-bar">
+          <!-- Populated dynamically: All, Spark ✨, Conversation ☕, Kindness ☀️, Friendship 🤝, Presence 🌿 -->
+        </div>
+
+        <!-- Moments List -->
+        <div id="moments-list" class="moments-timeline">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Sub-view 4: Real-Life People & Relationship Progression -->
+      <div id="journal-sub-people" class="journal-sub-panel hidden">
+        <section class="section-header" style="align-items: flex-start;">
+          <div>
+            <h2 class="section-title" data-i18n="journal_tab_people_zero">Connections</h2>
+            <p class="form-help" data-i18n="journal_people_desc">Track the organic progression of people you meet in the real world — from one-time sparks to close connections.</p>
+          </div>
+          <button id="btn-add-person" class="pill-btn primary" style="flex-shrink: 0;" data-i18n="btn_add_person">+ Add Connection</button>
+        </section>
+
+        <!-- Filter by Relationship Stage -->
+        <div class="stories-filter-bar" id="people-filter-bar">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- People List Grid -->
+        <div id="people-list" class="people-grid">
+          <!-- Rendered dynamically -->
         </div>
       </div>
     </main>
@@ -314,6 +445,22 @@
           <p id="sos-motivation-text" class="urge-showcase-text">
             "Remember why you stepped away."
           </p>
+        </div>
+
+        <!-- Real Experience / Story Showcase (Anti-Craving Deterrent) -->
+        <div id="sos-story-showcase" class="sos-story-box hidden">
+          <div class="sos-story-header">
+            <span class="sos-story-icon">⚡</span>
+            <span id="sos-story-label" class="sos-story-label" data-i18n="sos_story_label">Real Story from this app:</span>
+          </div>
+          <div class="sos-story-content">
+            <div id="sos-story-person" class="sos-story-person"></div>
+            <p id="sos-story-text" class="sos-story-text"></p>
+            <div class="sos-story-lesson">
+              <strong data-i18n="sos_story_takeaway">Reality Check:</strong>
+              <span id="sos-story-lesson-text"></span>
+            </div>
+          </div>
         </div>
 
         <!-- 2-Minute Guided Box Breathing -->
@@ -643,6 +790,259 @@
           Done
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: ADD / EDIT REALITY CHECK STORY -->
+  <div id="modal-story" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 id="story-modal-title" class="sheet-title" data-i18n="story_modal_title_add">Add Reality Check / Story</h3>
+        <button class="close-btn" data-close="modal-story">✕</button>
+      </div>
+
+      <form id="form-story-edit">
+        <input type="hidden" id="story-edit-id" value="">
+
+        <!-- App Selector -->
+        <div class="form-group">
+          <label class="form-label" for="story-input-app" data-i18n="story_form_app">Dating App</label>
+          <select id="story-input-app" class="form-control" required>
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Person / Nickname (Optional) -->
+        <div class="form-group">
+          <label class="form-label" for="story-input-person" data-i18n="story_form_person">Person / Nickname (Optional)</label>
+          <input type="text" id="story-input-person" class="form-control" data-i18n-placeholder="story_form_person_placeholder" placeholder="e.g. Sarah, Hinge coffee date, Alex...">
+        </div>
+
+        <!-- Incident Type Pill Selector -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="story_form_incident_type">What kind of experience was it?</label>
+          <div class="incident-selector" id="incident-selector-container">
+            <div class="incident-pill selected" data-type="ghosting">
+              <span>👻</span>
+              <span data-i18n="incident_ghosted">Ghosted</span>
+            </div>
+            <div class="incident-pill" data-type="stood_up">
+              <span>🚫</span>
+              <span data-i18n="incident_stood_up">Stood Up / Flaked</span>
+            </div>
+            <div class="incident-pill" data-type="penpal">
+              <span>💬</span>
+              <span data-i18n="incident_penpal">Endless Pen-Pal</span>
+            </div>
+            <div class="incident-pill" data-type="catfish">
+              <span>🎭</span>
+              <span data-i18n="incident_catfish">Catfished / Deceptive</span>
+            </div>
+            <div class="incident-pill" data-type="toxic">
+              <span>🚩</span>
+              <span data-i18n="incident_toxic">Rude / Disrespectful</span>
+            </div>
+            <div class="incident-pill" data-type="burnout">
+              <span>😮‍💨</span>
+              <span data-i18n="incident_burnout">Superficial / Burnout</span>
+            </div>
+            <div class="incident-pill" data-type="other">
+              <span>📝</span>
+              <span data-i18n="incident_other">Other Encounter</span>
+            </div>
+          </div>
+          <input type="hidden" id="story-input-incident" value="ghosting">
+        </div>
+
+        <!-- Story text -->
+        <div class="form-group">
+          <label class="form-label" for="story-input-text" data-i18n="story_form_what_happened">What happened? (The Story)</label>
+          <textarea id="story-input-text" class="form-control" rows="3" data-i18n-placeholder="story_form_what_happened_placeholder" placeholder="Describe the conversation, date, or sudden turn of events..." required></textarea>
+        </div>
+
+        <!-- Reality Check Lesson -->
+        <div class="form-group">
+          <label class="form-label" for="story-input-lesson" data-i18n="story_form_lesson">Why did this make you tired of dating apps? (The Reality Check)</label>
+          <textarea id="story-input-lesson" class="form-control" rows="2" data-i18n-placeholder="story_form_lesson_placeholder" placeholder="e.g. Tired of people treating human connection like a disposable catalog..." required></textarea>
+        </div>
+
+        <!-- Date -->
+        <div class="form-group">
+          <label class="form-label" for="story-input-date" data-i18n="story_form_date">Approximate Date</label>
+          <input type="date" id="story-input-date" class="form-control">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 18px;">
+          <button type="button" class="pill-btn" data-close="modal-story" style="flex: 1; justify-content: center;" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="pill-btn primary" style="flex: 2; justify-content: center;" data-i18n="btn_save_story">Save Reality Check</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 8: ADD / EDIT REAL-WORLD MOMENT -->
+  <div id="modal-moment" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 id="moment-modal-title" class="sheet-title" data-i18n="moment_modal_title_add">Log Real-World Interaction</h3>
+        <button class="close-btn" data-close="modal-moment">✕</button>
+      </div>
+
+      <form id="form-moment-edit">
+        <input type="hidden" id="moment-edit-id" value="">
+
+        <!-- Headline / Title -->
+        <div class="form-group">
+          <label class="form-label" for="moment-input-title" data-i18n="moment_form_title">Headline / What was it?</label>
+          <input type="text" id="moment-input-title" class="form-control" data-i18n-placeholder="moment_form_title_placeholder" placeholder="e.g. Chat waiting for coffee, Bookstore laugh..." required>
+        </div>
+
+        <!-- Location -->
+        <div class="form-group">
+          <label class="form-label" for="moment-input-location" data-i18n="moment_form_location">Location / Setting</label>
+          <input type="text" id="moment-input-location" class="form-control" data-i18n-placeholder="moment_form_location_placeholder" placeholder="e.g. Local café, Gym, Bookstore, Train, Park..." required>
+        </div>
+
+        <!-- Category Selector -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="moment_form_category">What kind of interaction was it?</label>
+          <div class="incident-selector" id="moment-category-selector-container">
+            <div class="incident-pill selected" data-cat="spark">
+              <span>✨</span>
+              <span data-i18n="moment_cat_spark">Romantic Spark</span>
+            </div>
+            <div class="incident-pill" data-cat="conversation">
+              <span>☕</span>
+              <span data-i18n="moment_cat_conversation">Spontaneous Chat</span>
+            </div>
+            <div class="incident-pill" data-cat="kindness">
+              <span>☀️</span>
+              <span data-i18n="moment_cat_kindness">Warm Smile / Kindness</span>
+            </div>
+            <div class="incident-pill" data-cat="friendship">
+              <span>🤝</span>
+              <span data-i18n="moment_cat_friendship">Deep Connection</span>
+            </div>
+            <div class="incident-pill" data-cat="presence">
+              <span>🌿</span>
+              <span data-i18n="moment_cat_presence">Real-World Presence</span>
+            </div>
+          </div>
+          <input type="hidden" id="moment-input-category" value="spark">
+        </div>
+
+        <!-- Story text -->
+        <div class="form-group">
+          <label class="form-label" for="moment-input-story" data-i18n="moment_form_story">What happened? (The Real-World Experience)</label>
+          <textarea id="moment-input-story" class="form-control" rows="3" data-i18n-placeholder="moment_form_story_placeholder" placeholder="Describe what took place, what you said, or the connection you felt..." required></textarea>
+        </div>
+
+        <!-- Feeling / Motivation -->
+        <div class="form-group">
+          <label class="form-label" for="moment-input-feeling" data-i18n="moment_form_feeling">How did it feel compared to dating apps? (Your Motivation)</label>
+          <textarea id="moment-input-feeling" class="form-control" rows="2" data-i18n-placeholder="moment_form_feeling_placeholder" placeholder="e.g. Felt 100x warmer and more genuine than 1,000 hollow swipes..." required></textarea>
+        </div>
+
+        <!-- Link to Person (Optional) -->
+        <div class="form-group">
+          <label class="form-label" for="moment-input-person" data-i18n="moment_form_person">Link to a Person (Optional)</label>
+          <select id="moment-input-person" class="form-control">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Date -->
+        <div class="form-group">
+          <label class="form-label" for="moment-input-date" data-i18n="moment_form_date">Date</label>
+          <input type="date" id="moment-input-date" class="form-control">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 18px;">
+          <button type="button" class="pill-btn" data-close="modal-moment" style="flex: 1; justify-content: center;" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="pill-btn primary" style="flex: 2; justify-content: center;" data-i18n="btn_save_moment">Save Real-World Moment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 9: ADD / EDIT REAL-LIFE CONNECTION -->
+  <div id="modal-person" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 id="person-modal-title" class="sheet-title" data-i18n="person_modal_title_add">Add Real-Life Connection</h3>
+        <button class="close-btn" data-close="modal-person">✕</button>
+      </div>
+
+      <form id="form-person-edit">
+        <input type="hidden" id="person-edit-id" value="">
+
+        <!-- Name / Nickname -->
+        <div class="form-group">
+          <label class="form-label" for="person-input-name" data-i18n="person_form_name">Name / Nickname *</label>
+          <input type="text" id="person-input-name" class="form-control" data-i18n-placeholder="person_form_name_placeholder" placeholder="e.g. Maya, David from Climbing, Sarah..." required>
+        </div>
+
+        <!-- Relationship Progression Stage -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="person_form_stage">Relationship Progression Stage</label>
+          <div class="incident-selector" id="person-stage-selector-container">
+            <div class="incident-pill" data-stage="spontaneous">
+              <span>⚡</span>
+              <span data-i18n="stage_spontaneous">One-Time Spark</span>
+            </div>
+            <div class="incident-pill selected" data-stage="casual">
+              <span>👋</span>
+              <span data-i18n="stage_casual">Casual Acquaintance</span>
+            </div>
+            <div class="incident-pill" data-stage="regular">
+              <span>☕</span>
+              <span data-i18n="stage_regular">Regular Contact</span>
+            </div>
+            <div class="incident-pill" data-stage="close">
+              <span>🤝</span>
+              <span data-i18n="stage_close">Close Connection</span>
+            </div>
+            <div class="incident-pill" data-stage="romantic">
+              <span>❤️</span>
+              <span data-i18n="stage_romantic">Romantic Interest</span>
+            </div>
+          </div>
+          <input type="hidden" id="person-input-stage" value="casual">
+        </div>
+
+        <!-- Date of Birth (Optional) -->
+        <div class="form-group">
+          <label class="form-label" for="person-input-dob" data-i18n="person_form_dob">Date of Birth (Optional)</label>
+          <input type="date" id="person-input-dob" class="form-control">
+          <span class="form-help" style="font-size: 0.75rem; opacity: 0.8;">Leave blank if not known yet; can naturally emerge over time.</span>
+        </div>
+
+        <!-- Where / How met -->
+        <div class="form-group">
+          <label class="form-label" for="person-input-met-at" data-i18n="person_form_met_at">Where / How Did You Meet? (Optional)</label>
+          <input type="text" id="person-input-met-at" class="form-control" data-i18n-placeholder="person_form_met_at_placeholder" placeholder="e.g. Local climbing gym, Bookstore photography section...">
+        </div>
+
+        <!-- Contact / Socials -->
+        <div class="form-group">
+          <label class="form-label" for="person-input-contact" data-i18n="person_form_contact">Contact Info / Socials (Optional)</label>
+          <input type="text" id="person-input-contact" class="form-control" data-i18n-placeholder="person_form_contact_placeholder" placeholder="e.g. @instagram, WhatsApp, +49 170...">
+        </div>
+
+        <!-- Notes & Interests -->
+        <div class="form-group">
+          <label class="form-label" for="person-input-notes" data-i18n="person_form_notes">Notes, Interests & Memories (Optional)</label>
+          <textarea id="person-input-notes" class="form-control" rows="3" data-i18n-placeholder="person_form_notes_placeholder" placeholder="e.g. Loves oat milk cappuccinos, plays tennis, dog named Luna..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 18px;">
+          <button type="button" class="pill-btn" data-close="modal-person" style="flex: 1; justify-content: center;" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="pill-btn primary" style="flex: 2; justify-content: center;" data-i18n="btn_save_person">Save Connection</button>
+        </div>
+      </form>
     </div>
   </div>
 
