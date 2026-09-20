@@ -74,6 +74,65 @@ function getDefaultState() {
         emoji: '✨',
         note: 'Had an urge to scroll while on the train, but read a book chapter instead.'
       }
+    ],
+    stories: [
+      {
+        id: 'story-1',
+        appId: 'hinge',
+        appName: 'Hinge',
+        personName: 'Sarah',
+        incidentType: 'stood_up',
+        date: new Date(now - 6 * day).toISOString().slice(0, 10),
+        story: 'Texted back and forth for nearly three weeks. Planned dinner on a Friday night, and 45 minutes before meeting she unmatched without a word.',
+        lesson: 'Dating apps turn real humans into disposable notifications with zero accountability.'
+      },
+      {
+        id: 'story-2',
+        appId: 'tinder',
+        appName: 'Tinder',
+        personName: 'Alex',
+        incidentType: 'ghosting',
+        date: new Date(now - 16 * day).toISOString().slice(0, 10),
+        story: 'Had a great 3-hour first date, talked about our favorite music, and said we would meet again next weekend. Sent one follow-up text and never heard back.',
+        lesson: 'The endless illusion of "someone slightly better just one swipe away" kills genuine appreciation.'
+      }
+    ],
+    moments: [
+      {
+        id: 'moment-1',
+        title: 'Spontaneous chat waiting for coffee',
+        location: 'Local Café',
+        category: 'conversation',
+        personId: null,
+        personName: '',
+        date: new Date(now - 1 * day).toISOString().slice(0, 10),
+        story: 'Instead of staring down at my phone while waiting for my flat white, I smiled and complimented someone on their vintage coat. We ended up having a lovely 5-minute chat about secondhand shops.',
+        feeling: 'A spontaneous 5-minute real conversation gave me more genuine warmth than hundreds of matches on an app.'
+      },
+      {
+        id: 'moment-2',
+        title: 'Shared laugh in the bookstore',
+        location: 'Bookstore',
+        category: 'spark',
+        personId: 'person-1',
+        personName: 'Elena',
+        date: new Date(now - 4 * day).toISOString().slice(0, 10),
+        story: 'We both reached for the same photography art book at the same time and laughed. We exchanged names and talked about film cameras for 15 minutes before parting with a genuine smile.',
+        feeling: 'Real eye contact and shared laughter can never be simulated by an algorithm.'
+      }
+    ],
+    people: [
+      {
+        id: 'person-1',
+        name: 'Elena',
+        stage: 'close', // 'spontaneous' | 'casual' | 'regular' | 'close' | 'romantic'
+        dob: '1997-06-15',
+        metAt: 'City Center Bookstore',
+        contact: '@elena_film',
+        notes: 'Met by the photography book section. Loves 35mm film cameras, vintage art books, and iced oat matcha. Has a rescue cat named Oliver.',
+        createdAt: new Date(now - 4 * day).toISOString(),
+        updatedAt: new Date(now - 1 * day).toISOString()
+      }
     ]
   };
 }
@@ -131,6 +190,15 @@ class StorageService {
     // Ensure essential arrays exist
     if (!Array.isArray(data.apps)) data.apps = [];
     if (!Array.isArray(data.checkIns)) data.checkIns = [];
+    if (!Array.isArray(data.stories)) {
+      data.stories = getDefaultState().stories || [];
+    }
+    if (!Array.isArray(data.moments)) {
+      data.moments = getDefaultState().moments || [];
+    }
+    if (!Array.isArray(data.people)) {
+      data.people = getDefaultState().people || [];
+    }
     if (!data.currency) data.currency = '€';
     if (!data.theme) data.theme = 'claude-light';
     if (!data.language || (data.language !== 'de' && data.language !== 'en')) {
@@ -344,6 +412,211 @@ class StorageService {
   deleteCheckIn(id) {
     this.data.checkIns = (this.data.checkIns || []).filter(c => c.id !== id);
     this.saveData();
+  }
+
+  // --- Dating App Stories & Reality Checks ---
+
+  getStories(filterAppId = null) {
+    const list = this.data.stories || [];
+    if (filterAppId && filterAppId !== 'all') {
+      return list.filter(s => s.appId === filterAppId || (s.appName && s.appName.toLowerCase() === filterAppId.toLowerCase()));
+    }
+    return [...list];
+  }
+
+  getStory(id) {
+    return (this.data.stories || []).find(s => s.id === id);
+  }
+
+  getStoriesForApp(appId) {
+    if (!appId) return [];
+    return (this.data.stories || []).filter(s => 
+      s.appId === appId || 
+      (s.appName && s.appName.toLowerCase() === appId.toLowerCase())
+    );
+  }
+
+  saveStory(storyData) {
+    const stories = [...(this.data.stories || [])];
+    const index = stories.findIndex(s => s.id === storyData.id);
+
+    const record = {
+      id: storyData.id || `story-${Date.now()}`,
+      appId: storyData.appId || 'general',
+      appName: storyData.appName || 'General',
+      personName: storyData.personName ? storyData.personName.trim() : '',
+      incidentType: storyData.incidentType || 'ghosting',
+      date: storyData.date || new Date().toISOString().slice(0, 10),
+      story: storyData.story ? storyData.story.trim() : '',
+      lesson: storyData.lesson ? storyData.lesson.trim() : '',
+      createdAt: storyData.createdAt || new Date().toISOString()
+    };
+
+    if (index >= 0) {
+      stories[index] = { ...stories[index], ...record };
+    } else {
+      stories.unshift(record); // newest first
+    }
+
+    this.data.stories = stories;
+    this.saveData();
+    return record;
+  }
+
+  deleteStory(id) {
+    this.data.stories = (this.data.stories || []).filter(s => s.id !== id);
+    this.saveData();
+    return this.data.stories;
+  }
+
+  // --- Real-Life Moments & Positive Motivation ---
+
+  isMomentAssociated(moment) {
+    if (!moment) return false;
+    const hasId = moment.personId && String(moment.personId).trim() !== '' && moment.personId !== 'none';
+    const hasName = moment.personName && String(moment.personName).trim() !== '';
+    return Boolean(hasId || hasName);
+  }
+
+  getMoments(filterCategory = null) {
+    const list = this.data.moments || [];
+    if (!filterCategory || filterCategory === 'all') {
+      return [...list];
+    }
+    if (filterCategory === 'unassociated' || filterCategory === 'standalone') {
+      return list.filter(m => !this.isMomentAssociated(m));
+    }
+    if (filterCategory === 'with_person' || filterCategory === 'linked') {
+      return list.filter(m => this.isMomentAssociated(m));
+    }
+    return list.filter(m => m.category === filterCategory);
+  }
+
+  getMoment(id) {
+    return (this.data.moments || []).find(m => m.id === id);
+  }
+
+  saveMoment(momentData) {
+    const moments = [...(this.data.moments || [])];
+    const index = moments.findIndex(m => m.id === momentData.id);
+
+    const record = {
+      id: momentData.id || `moment-${Date.now()}`,
+      title: momentData.title ? momentData.title.trim() : 'Real-World Moment',
+      location: momentData.location ? momentData.location.trim() : 'Real World',
+      category: momentData.category || 'conversation',
+      personId: momentData.personId || null,
+      personName: momentData.personName ? momentData.personName.trim() : '',
+      date: momentData.date || new Date().toISOString().slice(0, 10),
+      story: momentData.story ? momentData.story.trim() : '',
+      feeling: momentData.feeling ? momentData.feeling.trim() : '',
+      createdAt: momentData.createdAt || new Date().toISOString()
+    };
+
+    if (index >= 0) {
+      moments[index] = { ...moments[index], ...record };
+    } else {
+      moments.unshift(record); // newest first
+    }
+
+    this.data.moments = moments;
+    this.saveData();
+    return record;
+  }
+
+  deleteMoment(id) {
+    this.data.moments = (this.data.moments || []).filter(m => m.id !== id);
+    this.saveData();
+    return this.data.moments;
+  }
+
+  getRandomMoment(filterCategory = null) {
+    const moments = this.getMoments(filterCategory);
+    if (moments.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * moments.length);
+    return moments[randomIndex];
+  }
+
+  // --- Real-Life People & Relationship Progression ---
+
+  getPeople(filterStage = 'all') {
+    const people = this.data.people || [];
+    if (!filterStage || filterStage === 'all') {
+      return [...people];
+    }
+    return people.filter(p => p.stage === filterStage);
+  }
+
+  getPerson(id) {
+    if (!id) return null;
+    return (this.data.people || []).find(p => p.id === id) || null;
+  }
+
+  savePerson(personData) {
+    if (!this.data.people) this.data.people = [];
+    const now = new Date().toISOString();
+    const existingIndex = this.data.people.findIndex(p => p.id === personData.id);
+
+    if (existingIndex >= 0) {
+      this.data.people[existingIndex] = {
+        ...this.data.people[existingIndex],
+        ...personData,
+        updatedAt: now
+      };
+      // Keep moment.personName synchronized if person is renamed
+      if (personData.name && this.data.moments) {
+        this.data.moments.forEach(m => {
+          if (m.personId === personData.id) {
+            m.personName = personData.name.trim();
+          }
+        });
+      }
+    } else {
+      const newPerson = {
+        id: personData.id || `person-${Date.now()}`,
+        name: personData.name || 'Unnamed Connection',
+        stage: personData.stage || 'casual',
+        dob: personData.dob || '',
+        metAt: personData.metAt || '',
+        contact: personData.contact || '',
+        notes: personData.notes || '',
+        createdAt: now,
+        updatedAt: now
+      };
+      this.data.people.unshift(newPerson);
+    }
+
+    this.saveData();
+    return this.data.people;
+  }
+
+  deletePerson(id) {
+    this.data.people = (this.data.people || []).filter(p => p.id !== id);
+    // Disconnect linked moments so they don't break, keep them as one-time memories
+    if (this.data.moments) {
+      this.data.moments.forEach(m => {
+        if (m.personId === id) {
+          m.personId = null;
+          m.personName = '';
+        }
+      });
+    }
+    this.saveData();
+    return this.data.people;
+  }
+
+  setPersonStage(id, newStage) {
+    const person = this.getPerson(id);
+    if (!person) return null;
+    person.stage = newStage;
+    person.updatedAt = new Date().toISOString();
+    this.saveData();
+    return person;
+  }
+
+  getMomentsForPerson(personId) {
+    if (!personId) return [];
+    return (this.data.moments || []).filter(m => m.personId === personId);
   }
 
   // --- Backup & Safe Restore ---
