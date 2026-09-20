@@ -266,7 +266,6 @@ html {
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior-y: none;
 }
 
 body {
@@ -2425,9 +2424,7 @@ body {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(26, 25, 23, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(18, 17, 15, 0.65);
   display: none;
   align-items: flex-end;
   justify-content: center;
@@ -2443,44 +2440,38 @@ body {
   background: var(--bg-surface);
   width: 100%;
   max-width: 520px;
-  max-height: 90vh;
-  max-height: 90dvh;
+  max-height: 85vh;
+  max-height: 85dvh;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   border-top: 1px solid var(--border-subtle);
-  padding: 16px 20px max(18px, env(safe-area-inset-bottom, 18px)) 20px;
+  padding: 14px 18px max(24px, env(safe-area-inset-bottom, 24px)) 18px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-lg);
-  animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  /* animation & transform removed — they kill iOS Safari touch scrolling */
+  overscroll-behavior-y: contain;
+  box-sizing: border-box;
 }
 
 .modal-sheet form {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
+  display: block;
   width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
-.modal-sheet-content {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  padding-right: 0;
-  padding-bottom: 28px;
-  scroll-padding-bottom: 100px;
+.modal-sheet-content,
+.urge-overlay-container {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: auto !important;
+  flex: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding-bottom: 24px;
 }
 
 .modal-sheet-footer {
@@ -2498,19 +2489,31 @@ body {
 }
 
 .sheet-handle {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: -14px !important;
+  z-index: 50 !important;
   width: 36px;
   height: 4px;
   border-radius: var(--radius-pill);
   background: var(--border-medium);
-  margin: 0 auto 12px auto;
+  margin: 0 auto 10px auto;
   flex-shrink: 0;
 }
 
 .sheet-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: -14px !important;
+  background: var(--bg-surface) !important;
+  z-index: 50 !important;
+  padding-top: 4px !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-shrink: 0 !important;
 }
 
 .sheet-title {
@@ -3164,30 +3167,32 @@ textarea.form-control {
 
   /* Mobile Modal Sheet & Form Responsiveness */
   .modal-sheet {
-    max-height: 92vh;
-    max-height: 92dvh;
-    padding: 14px 16px max(16px, env(safe-area-inset-bottom, 16px)) 16px;
+    max-height: 88vh;
+    max-height: 88dvh;
+    padding: 14px 16px max(24px, env(safe-area-inset-bottom, 24px)) 16px;
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
-  .modal-sheet form {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+  .sheet-header {
+    top: -14px !important;
   }
 
-  .modal-sheet-content {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-    padding-right: 0;
-    padding-bottom: 36px;
-    scroll-padding-bottom: 110px;
+  .sheet-handle {
+    top: -14px !important;
+  }
+
+  .modal-sheet-content,
+  .urge-overlay-container {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: auto !important;
+    flex: none !important;
+    padding-bottom: 28px !important;
   }
 
   .sheet-handle {
@@ -3196,6 +3201,7 @@ textarea.form-control {
 
   .sheet-header {
     margin-bottom: 10px;
+    flex-shrink: 0;
   }
 
   .sheet-title {

@@ -23,6 +23,54 @@
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /*
+     * iOS Safari PWA Modal Scrolling Fix
+     *
+     * Three things kill touch-scrolling inside position:fixed on iOS WebKit:
+     *   1. backdrop-filter on the fixed parent
+     *   2. ANY CSS transform on the scrollable child (even translateZ(0))
+     *   3. CSS animation that uses transform (e.g. slideUp translateY)
+     *
+     * This block removes all three and forces native momentum scrolling.
+     */
+
+    .modal-backdrop {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+
+    .modal-sheet {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior-y: contain !important;
+      max-height: 85vh !important;
+      max-height: 85dvh !important;
+      /* CRITICAL: no transform, no animation — they kill iOS scroll */
+      -webkit-transform: none !important;
+      transform: none !important;
+      animation: none !important;
+    }
+
+    .sheet-handle {
+      flex-shrink: 0 !important;
+    }
+
+    .sheet-header {
+      flex-shrink: 0 !important;
+    }
+
+    /* Inner wrappers must NOT be scroll containers — only .modal-sheet scrolls */
+    .modal-sheet-content,
+    .urge-overlay-container,
+    .modal-sheet form {
+      overflow: visible !important;
+      height: auto !important;
+      max-height: none !important;
+      min-height: 0 !important;
+      flex: none !important;
+    }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -431,7 +479,7 @@
         <button class="close-btn" data-close="modal-sos">✕</button>
       </div>
 
-      <div class="urge-overlay-container">
+      <div class="urge-overlay-container modal-sheet-content">
         <div class="form-group" style="width: 100%; margin-bottom: 8px;">
           <label class="form-label" style="text-align: left;" data-i18n="sos_app_select_label">Which app are you tempted to download?</label>
           <select id="sos-app-select" class="form-control">
@@ -606,18 +654,20 @@
         <button class="close-btn" data-close="modal-reset">✕</button>
       </div>
 
-      <p id="reset-modal-explanation" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 14px;">
-        Did you redownload or browse <strong id="reset-app-name">this app</strong>? Slips happen during recovery. Your past streak will be preserved in history, and you can restart with compassion.
-      </p>
+      <div class="modal-sheet-content">
+        <p id="reset-modal-explanation" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 14px;">
+          Did you redownload or browse <strong id="reset-app-name">this app</strong>? Slips happen during recovery. Your past streak will be preserved in history, and you can restart with compassion.
+        </p>
 
-      <div class="form-group">
-        <label class="form-label" for="reset-reason-input" data-i18n="reset_form_reason">What triggered the slip? (Optional reflection)</label>
-        <textarea id="reset-reason-input" class="form-control" rows="2" data-i18n-placeholder="reset_form_reason_placeholder" placeholder="e.g. Felt lonely on a Friday night..."></textarea>
-      </div>
+        <div class="form-group">
+          <label class="form-label" for="reset-reason-input" data-i18n="reset_form_reason">What triggered the slip? (Optional reflection)</label>
+          <textarea id="reset-reason-input" class="form-control" rows="2" data-i18n-placeholder="reset_form_reason_placeholder" placeholder="e.g. Felt lonely on a Friday night..."></textarea>
+        </div>
 
-      <div style="display: flex; gap: 10px; margin-top: 16px;">
-        <button type="button" class="pill-btn" data-close="modal-reset" style="flex: 1; justify-content: center;" data-i18n="btn_keep_streak">Keep My Streak</button>
-        <button type="button" id="btn-confirm-reset" class="pill-btn" style="flex: 1; justify-content: center; background: var(--danger); color: white; border-color: var(--danger);" data-i18n="btn_confirm_reset">Reset Counter</button>
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <button type="button" class="pill-btn" data-close="modal-reset" style="flex: 1; justify-content: center;" data-i18n="btn_keep_streak">Keep My Streak</button>
+          <button type="button" id="btn-confirm-reset" class="pill-btn" style="flex: 1; justify-content: center; background: var(--danger); color: white; border-color: var(--danger);" data-i18n="btn_confirm_reset">Reset Counter</button>
+        </div>
       </div>
     </div>
   </div>
@@ -631,7 +681,8 @@
         <button class="close-btn" data-close="modal-settings">✕</button>
       </div>
 
-      <!-- App Appearance -->
+      <div class="modal-sheet-content">
+        <!-- App Appearance -->
       <div class="settings-group">
         <div class="settings-group-title" data-i18n="settings_group_appearance">Appearance & Currency</div>
         <div class="settings-row">
@@ -723,6 +774,7 @@
           📱 How to Install on Mobile (iPhone & Android)
         </button>
       </div>
+      </div>
     </div>
   </div>
 
@@ -735,7 +787,7 @@
         <button class="close-btn" data-close="modal-ios-guide">✕</button>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 14px; padding: 6px 0;">
+      <div class="modal-sheet-content" style="display: flex; flex-direction: column; gap: 14px; padding: 6px 0;">
         <div style="display: flex; gap: 12px; align-items: flex-start;">
           <span style="font-size: 1.4rem;">🍎</span>
           <div>
@@ -776,7 +828,7 @@
         <button class="close-btn" data-close="modal-phone-connect">✕</button>
       </div>
 
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px;">
+      <div class="modal-sheet-content" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px;">
         <p class="form-help" style="margin-bottom: 0;" data-i18n="mobile_connect_desc">
           Scan with your phone's Camera (iPhone or Android) to open this app directly:
         </p>

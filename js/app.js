@@ -430,6 +430,12 @@
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal(modal);
       });
+      // Prevent background scrolling on iOS when dragging the backdrop outside the sheet
+      modal.addEventListener('touchmove', (e) => {
+        if (e.target === modal) {
+          e.preventDefault();
+        }
+      }, { passive: false });
     });
 
     if (els.btnShowIosGuide) {
@@ -456,7 +462,24 @@
   function openModal(modalEl) {
     if (!modalEl) return;
     modalEl.classList.add('active');
-    document.body.style.overflow = 'hidden';
+
+    // CRITICAL iOS SAFARI FIX:
+    // In iOS Safari, setting document.body.style.overflow = 'hidden' disables
+    // touch scrolling gesture recognizers inside fixed/absolute modal dialogs!
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (!isIOS) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Ensure the sheet inside is directly scrollable on touch devices
+    const sheet = modalEl.querySelector('.modal-sheet');
+    if (sheet) {
+      sheet.scrollTop = 0;
+      sheet.style.overflowY = 'auto';
+      sheet.style.webkitOverflowScrolling = 'touch';
+      sheet.style.touchAction = 'pan-y';
+    }
   }
 
   function closeModal(modalEl) {

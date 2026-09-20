@@ -3,7 +3,7 @@
 // Note: App data (streaks, apps, motivations) lives in persistent client storage
 // and is NEVER altered or removed by service worker updates.
 
-const CACHE_NAME = 'dating-free-v1.0.30';
+const CACHE_NAME = 'dating-free-v1.0.31';
 
 // Only cache the root path (./), NOT ./index.html separately.
 // Tailscale serve (and similar reverse proxies) redirect /index.html → /,
