@@ -101,7 +101,7 @@ Generate a local certificate with [mkcert](https://github.com/FiloSottile/mkcert
 - **Personal Motivations**: Write down why you deleted each app (e.g., *"Hinge felt like an unpaid job"*, *"Tinder destroyed my attention span"*).
 - **Urge SOS (Craving Shield)**: Feeling tempted to redownload an app? Tap the shield to view your personalized motivation, follow an interactive 2-minute box breathing visualizer, and get 5 quick real-world grounding activities.
 - **Quantified Freedom (Smoke-Free Style)**: Cumulative hours saved, subscription money saved (€/$/£/CHF), and swipes avoided, translated into real-world equivalents (books read, gym workouts).
-- **Cognitive Milestones**: 10 neuroscience & psychology-backed recovery phases (Day 1 to Year 1) with progress bars.
+- **Cognitive Milestones in 4 Phases**: 17 neuroscience & psychology-backed recovery milestones organized across 4 distinct phases (Hour 1 to Year 1) with phase tracking and progress indicators.
 - **Daily Reflection Journal**: 1-tap mood check-ins (🌿 Peaceful, ⚡ Energized, ✨ Grounded, 🌧️ Lonely, 🔥 Tempted) with personal notes.
 - **6 Custom Aesthetic Themes**: Switch between **Claude Light** ☀️, **Claude Dark** 🌙, **Google Gemini** ✨ (cosmic dark with blue/purple spark), **ChatGPT** 🟢 (OpenAI slate & emerald), **GitHub** 🐙 (developer dark & vibrant green), and **Steam** 🎮 (gaming navy slate & electric cyan) with 1 click!
 - **Zero Data Loss on Updates**: App code cached by the Service Worker is strictly decoupled from your streak data. Updating the code will **never** delete your streaks.

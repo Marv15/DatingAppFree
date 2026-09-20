@@ -909,24 +909,142 @@ body {
 }
 
 /* ==========================================================================
-   Milestones View
+   Milestones View & Phase Cards
    ========================================================================== */
 
 .milestones-timeline {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.milestone-phase-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.milestone-phase-card.phase-completed {
+  border-color: var(--accent-border);
+}
+
+.milestone-phase-card.phase-active {
+  border-color: var(--border-medium);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+
+.milestone-phase-card.phase-locked {
+  opacity: 0.85;
+}
+
+.milestone-phase-header {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
-  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.milestone-phase-badge {
+  font-size: 1.4rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.phase-completed .milestone-phase-badge {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.milestone-phase-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.milestone-phase-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.milestone-phase-title {
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.milestone-phase-status-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.milestone-phase-status-pill.pill-completed {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+}
+
+.milestone-phase-status-pill.pill-active {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+}
+
+.milestone-phase-status-pill.pill-locked {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.milestone-phase-timeframe {
+  font-size: 0.73rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.milestone-phase-desc {
+  font-size: 0.81rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.milestone-phase-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .milestone-item {
-  background: var(--bg-surface);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
   transition: all var(--transition-fast);
 }
 
@@ -936,19 +1054,19 @@ body {
 }
 
 .milestone-item.locked {
-  opacity: 0.65;
+  opacity: 0.7;
   background: var(--bg-subtle);
 }
 
 .milestone-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--bg-subtle);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--bg-surface);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   flex-shrink: 0;
   border: 1px solid var(--border-subtle);
 }
@@ -960,42 +1078,58 @@ body {
 
 .milestone-content {
   flex: 1;
+  min-width: 0;
 }
 
 .milestone-top-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 4px;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
 .milestone-item-title {
   font-family: var(--font-serif);
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
+  margin: 0;
 }
 
 .milestone-target-time {
   font-size: 0.72rem;
   font-family: var(--font-mono);
   color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.milestone-subtitle-row {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 4px;
 }
 
 .milestone-item-desc {
-  font-size: 0.81rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.38;
   margin-bottom: 6px;
 }
 
 .milestone-insight-box {
-  background: var(--bg-subtle);
+  background: var(--bg-surface);
   padding: 6px 10px;
   border-radius: var(--radius-sm);
-  font-size: 0.74rem;
+  font-size: 0.73rem;
   color: var(--text-muted);
   line-height: 1.35;
+  border: 1px solid var(--border-subtle);
+}
+
+.milestone-item.unlocked .milestone-insight-box {
+  background: var(--bg-subtle);
 }
 
 .milestone-insight-box strong {
@@ -2988,11 +3122,17 @@ textarea.form-control {
     gap: 16px;
   }
 
-  /* 2-Column Milestones on Stages Tab */
+  /* Phase Layout on Tablet / Desktop */
   .milestones-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .milestone-phase-items {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+    gap: 12px;
   }
 
   /* 2-Column Stories, Moments & People Lists on Tablet / Desktop */
