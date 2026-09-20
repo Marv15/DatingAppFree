@@ -26,36 +26,52 @@ const MIME_TYPES = {
 };
 
 // Helper: Get local IPv4 address
-function getLocalIpAddress() {
+function getNetworkAddresses() {
   const interfaces = os.networkInterfaces();
-  const prioritized = [];
+  const lanIps = [];
+  const vpnIps = [];
   const fallbacks = [];
 
   for (const name of Object.keys(interfaces)) {
-    const isVirtual = name.toLowerCase().includes('vethernet') || 
-                      name.toLowerCase().includes('virtual') || 
-                      name.toLowerCase().includes('docker') ||
-                      name.toLowerCase().includes('loopback') ||
-                      name.toLowerCase().includes('default switch');
+    const lowerName = name.toLowerCase();
+    const isVpnOrVirtual = lowerName.includes('vethernet') || 
+                          lowerName.includes('virtual') || 
+                          lowerName.includes('docker') || 
+                          lowerName.includes('loopback') || 
+                          lowerName.includes('default switch') ||
+                          lowerName.includes('tailscale') ||
+                          lowerName.includes('wireguard') ||
+                          lowerName.includes('zerotier') ||
+                          lowerName.includes('wsl');
 
     for (const iface of interfaces[name]) {
       // Skip loopback, IPv6, and APIPA link-local 169.254.x.x
       if (iface.family === 'IPv4' && !iface.internal && !iface.address.startsWith('169.254.')) {
-        if (!isVirtual && (iface.address.startsWith('192.168.') || iface.address.startsWith('10.'))) {
-          prioritized.push(iface.address);
-        } else if (!isVirtual) {
-          prioritized.push(iface.address);
+        const addr = iface.address;
+        const isTailscale = addr.startsWith('100.') || lowerName.includes('tailscale');
+
+        if (!isVpnOrVirtual && !isTailscale) {
+          if (addr.startsWith('192.168.') || addr.startsWith('10.')) {
+            lanIps.unshift(addr); // Top priority: typical home Wi-Fi
+          } else {
+            lanIps.push(addr);
+          }
+        } else if (isTailscale) {
+          vpnIps.push(addr);
         } else {
-          fallbacks.push(iface.address);
+          fallbacks.push(addr);
         }
       }
     }
   }
 
-  return prioritized[0] || fallbacks[0] || '127.0.0.1';
+  const primaryIp = lanIps[0] || vpnIps[0] || fallbacks[0] || '127.0.0.1';
+  const tailscaleIp = vpnIps[0] || null;
+
+  return { primaryIp, tailscaleIp };
 }
 
-const localIp = getLocalIpAddress();
+const { primaryIp: localIp, tailscaleIp } = getNetworkAddresses();
 const localUrl = `http://localhost:${PORT}`;
 const phoneUrl = `http://${localIp}:${PORT}`;
 
@@ -116,6 +132,9 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('=============================================================');
   console.log(`  🖥️  On this Computer:   ${localUrl}`);
   console.log(`  📱  On your iPhone:     ${phoneUrl}`);
+  if (tailscaleIp) {
+    console.log(`  🔒  Via Tailscale VPN:  http://${tailscaleIp}:${PORT}`);
+  }
   console.log('=============================================================');
   console.log('  👉 Ensure your iPhone is on the SAME Wi-Fi network.');
   console.log('  👉 Scan the QR code inside the app or type the URL above in Safari.');
