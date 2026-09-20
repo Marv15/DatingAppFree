@@ -3,7 +3,7 @@
 // Note: App data (streaks, apps, motivations) lives in persistent client storage
 // and is NEVER altered or removed by service worker updates.
 
-const CACHE_NAME = 'dating-free-v1.0.16';
+const CACHE_NAME = 'dating-free-v1.0.17';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -61,8 +61,24 @@ self.addEventListener('fetch', (event) => {
   // Avoid caching foreign cross-origin resources like Google Fonts dynamically or handle gracefully
   if (url.origin === location.origin) {
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
+      caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+        if (cachedResponse) {
+          // Serve from cache immediately; update in background if online
+          fetch(event.request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseClone);
+              });
+            }
+          }).catch(() => {
+            // Silently ignore background fetch failure when offline
+          });
+          return cachedResponse;
+        }
+
+        // Not in cache: fetch from network
+        return fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -70,12 +86,14 @@ self.addEventListener('fetch', (event) => {
             });
           }
           return networkResponse;
-        }).catch(() => {
-          // Offline fallback
+        }).catch(async () => {
+          // Offline navigation fallback: return index.html for app shell
+          if (event.request.mode === 'navigate') {
+            const fallback = await caches.match('./index.html') || await caches.match('./');
+            if (fallback) return fallback;
+          }
           return cachedResponse;
         });
-
-        return cachedResponse || fetchPromise;
       })
     );
   } else {
