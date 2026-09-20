@@ -3,12 +3,13 @@
 // Note: App data (streaks, apps, motivations) lives in persistent client storage
 // and is NEVER altered or removed by service worker updates.
 
-const CACHE_NAME = 'dating-free-v1.0.3';
+const CACHE_NAME = 'dating-free-v1.0.6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './css/styles.css',
   './js/qrcode.js',
+  './js/i18n.js',
   './js/storage.js',
   './js/milestones.js',
   './js/app.js',
@@ -17,7 +18,12 @@ const ASSETS_TO_CACHE = [
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/qr-code.png'
+  './icons/qr-code.png',
+  './icons/badoo_logo.svg',
+  './icons/bumble_logo.svg',
+  './icons/grindr_logo.svg',
+  './icons/hinge_logo.svg',
+  './icons/tinder_logo.svg'
 ];
 
 // Install: Cache initial shell assets

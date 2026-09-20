@@ -1,5 +1,5 @@
 // Main Application Logic for Dating App Free PWA
-// Connects UI, storage, milestones, live countdown ticker, Urge SOS, and offline updates.
+// Connects UI, storage, milestones, live countdown ticker, Urge SOS, offline updates, and i18n.
 
 (function () {
   'use strict';
@@ -14,13 +14,84 @@
   let resettingAppId = null;
   let serviceWorkerRegistration = null;
 
-  // Box Breathing phases (Inhale 4s, Hold 4s, Exhale 4s, Hold 4s)
-  const BREATHING_PHASES = [
-    { name: 'Inhale Slowly', class: 'inhale', duration: 4, label: 'Breathe In' },
-    { name: 'Hold Gently', class: 'hold', duration: 4, label: 'Hold Breath' },
-    { name: 'Exhale Fully', class: 'exhale', duration: 4, label: 'Release' },
-    { name: 'Rest in Silence', class: 'hold', duration: 4, label: 'Rest & Be' }
-  ];
+  // Box Breathing phases helper (Inhale 4s, Hold 4s, Exhale 4s, Hold 4s)
+  function getBreathingPhases() {
+    const t = window.i18n ? window.i18n.t : (k => k);
+    return [
+      { name: 'Inhale Slowly', class: 'inhale', duration: 4, label: t('breath_inhale') },
+      { name: 'Hold Gently', class: 'hold', duration: 4, label: t('breath_hold') },
+      { name: 'Exhale Fully', class: 'exhale', duration: 4, label: t('breath_exhale') },
+      { name: 'Rest in Silence', class: 'hold', duration: 4, label: t('breath_rest') }
+    ];
+  }
+
+  // App Logos Configuration
+  function getAppIconConfig(appName) {
+    if (!appName) return null;
+    const n = appName.toLowerCase().trim();
+    if (n.includes('tinder')) {
+      return {
+        src: 'icons/tinder_logo.svg',
+        bg: '#FFFFFF',
+        padding: '5px',
+        fit: 'contain',
+        alt: 'Tinder'
+      };
+    }
+    if (n.includes('bumble')) {
+      return {
+        src: 'icons/bumble_logo.svg',
+        bg: '#F9B932',
+        padding: '0',
+        fit: 'cover',
+        alt: 'Bumble'
+      };
+    }
+    if (n.includes('hinge')) {
+      return {
+        src: 'icons/hinge_logo.svg',
+        bg: '#FAF8F5',
+        padding: '6px',
+        fit: 'contain',
+        alt: 'Hinge'
+      };
+    }
+    if (n.includes('badoo')) {
+      return {
+        src: 'icons/badoo_logo.svg',
+        bg: '#E9D8FF',
+        padding: '0',
+        fit: 'cover',
+        alt: 'Badoo'
+      };
+    }
+    if (n.includes('grindr')) {
+      return {
+        src: 'icons/grindr_logo.svg',
+        bg: '#1A1917',
+        padding: '5px',
+        fit: 'contain',
+        alt: 'Grindr'
+      };
+    }
+    return null;
+  }
+
+  function renderAppIconBadge(app, size = 36) {
+    const iconConfig = getAppIconConfig(app.name);
+    if (iconConfig) {
+      return `
+        <div class="app-icon-badge has-logo" style="width: ${size}px; height: ${size}px; background-color: ${iconConfig.bg}; padding: ${iconConfig.padding};">
+          <img src="${iconConfig.src}" alt="${escapeHtml(iconConfig.alt)}" class="app-logo-img" style="object-fit: ${iconConfig.fit}; width: 100%; height: 100%;">
+        </div>
+      `;
+    }
+    return `
+      <div class="app-icon-badge" style="width: ${size}px; height: ${size}px; background-color: ${app.color || 'var(--accent)'};">
+        ${escapeHtml(app.name.charAt(0).toUpperCase())}
+      </div>
+    `;
+  }
 
   // DOM Elements
   const els = {
@@ -62,6 +133,7 @@
     metricHoursSaved: document.getElementById('metric-hours-saved'),
     metricMoneySaved: document.getElementById('metric-money-saved'),
     metricSwipesAvoided: document.getElementById('metric-swipes-avoided'),
+    insightContainer: document.getElementById('insight-container'),
     insightBooks: document.getElementById('insight-books'),
     insightWorkouts: document.getElementById('insight-workouts'),
 
@@ -98,6 +170,7 @@
     appInputQuitdate: document.getElementById('app-input-quitdate'),
     appInputMinutes: document.getElementById('app-input-minutes'),
     appInputCost: document.getElementById('app-input-cost'),
+    appInputNeverPaid: document.getElementById('app-input-never-paid'),
     appInputMotivation: document.getElementById('app-input-motivation'),
     presetChips: document.querySelectorAll('.preset-chip'),
 
@@ -108,6 +181,7 @@
 
     modalSettings: document.getElementById('modal-settings'),
     settingsThemeSelect: document.getElementById('settings-theme-select'),
+    settingsLangSelect: document.getElementById('settings-lang-select'),
     settingsCurrencySelect: document.getElementById('settings-currency-select'),
     updateStatusText: document.getElementById('update-status-text'),
     btnCheckUpdates: document.getElementById('btn-check-updates'),
@@ -127,7 +201,14 @@
 
   // --- INITIALIZATION ---
   function init() {
+    // 1. Language initialization
+    const initialLang = window.storage.getLanguage() || (window.i18n ? window.i18n.detectDefaultLanguage() : 'en');
+    applyLanguage(initialLang, false);
+
+    // 2. Theme initialization
     applyTheme(window.storage.data.theme || 'claude-light');
+
+    // 3. Components
     setupNavigation();
     setupModals();
     setupTicker();
@@ -137,6 +218,28 @@
     setupPhoneConnect();
     setupServiceWorker();
     renderAll();
+  }
+
+  // --- LANGUAGE / I18N MANAGEMENT ---
+  function applyLanguage(lang, shouldReRender = true) {
+    if (window.i18n) {
+      window.i18n.setLanguage(lang);
+    }
+    window.storage.setLanguage(lang);
+
+    if (els.settingsLangSelect) {
+      els.settingsLangSelect.value = lang;
+    }
+
+    if (shouldReRender) {
+      renderAll();
+      updateBreathingUI();
+      if (els.btnToggleBreathing) {
+        els.btnToggleBreathing.textContent = breathingActive 
+          ? window.i18n.t('btn_pause_breathing') 
+          : window.i18n.t('btn_resume_breathing');
+      }
+    }
   }
 
   // --- THEME CONFIGURATION ---
@@ -292,23 +395,34 @@
 
     if (lastUsedApp) {
       const lastAppTimeAgo = formatShortTime(now - new Date(lastUsedApp.quitDate).getTime());
-      els.overallLastAppNote.innerHTML = `Calculated from your last used app: <strong>${escapeHtml(lastUsedApp.name)}</strong> (${lastAppTimeAgo} free)`;
-      els.overallAppBadge.textContent = `${activeApps.length} Apps Free`;
+      const iconConfig = getAppIconConfig(lastUsedApp.name);
+      const iconInline = iconConfig ? `
+        <img src="${iconConfig.src}" alt="" style="width: 15px; height: 15px; vertical-align: -2px; margin-right: 4px; display: inline-block; border-radius: 3px;">
+      ` : '';
+
+      els.overallLastAppNote.innerHTML = window.i18n.t('hero_note_calc', {
+        app: `${iconInline}${escapeHtml(lastUsedApp.name)}`,
+        time: lastAppTimeAgo
+      });
+      els.overallAppBadge.textContent = window.i18n.t('hero_badge_count', { count: activeApps.length });
     } else {
-      els.overallLastAppNote.innerHTML = `No apps tracked yet. Tap <strong>+ Add App</strong> to begin.`;
-      els.overallAppBadge.textContent = `0 Apps`;
+      els.overallLastAppNote.innerHTML = window.i18n.t('hero_note_empty');
+      els.overallAppBadge.textContent = window.i18n.t('hero_badge_zero');
     }
 
     // Next Milestone Progress
-    const milestoneProgress = window.MilestoneManager.getProgress(diffMs);
+    const milestoneProgress = window.MilestoneManager.getProgress(diffMs, window.storage.getLanguage());
     if (milestoneProgress.nextMilestone) {
       els.heroMilestoneIcon.textContent = milestoneProgress.nextMilestone.badge;
-      els.heroMilestoneName.textContent = `Next: ${milestoneProgress.nextMilestone.title} (${milestoneProgress.hoursRemaining}h left)`;
+      els.heroMilestoneName.textContent = window.i18n.t('hero_milestone_next', {
+        title: milestoneProgress.nextMilestone.title,
+        hours: milestoneProgress.hoursRemaining
+      });
       els.heroMilestonePercent.textContent = `${milestoneProgress.progressPercent}%`;
       els.heroProgressFill.style.width = `${milestoneProgress.progressPercent}%`;
     } else {
       els.heroMilestoneIcon.textContent = '👑';
-      els.heroMilestoneName.textContent = 'All Master Milestones Unlocked!';
+      els.heroMilestoneName.textContent = window.i18n.t('hero_milestones_all_done');
       els.heroMilestonePercent.textContent = '100%';
       els.heroProgressFill.style.width = '100%';
     }
@@ -317,10 +431,16 @@
     const currency = window.storage.data.currency || '€';
     els.metricHoursSaved.textContent = `${stats.totalHoursSaved}h`;
     els.metricMoneySaved.textContent = `${currency}${stats.totalMoneySaved}`;
-    els.metricSwipesAvoided.textContent = stats.totalSwipesAvoided.toLocaleString();
+    els.metricSwipesAvoided.textContent = stats.totalSwipesAvoided.toLocaleString(getLocaleString());
 
-    els.insightBooks.textContent = `${stats.booksReadEquivalent} books`;
-    els.insightWorkouts.textContent = `${stats.workoutsEquivalent} workouts`;
+    const booksStr = window.i18n.t('insight_books', { count: stats.booksReadEquivalent });
+    const workoutsStr = window.i18n.t('insight_workouts', { count: stats.workoutsEquivalent });
+    if (els.insightContainer) {
+      els.insightContainer.innerHTML = window.i18n.t('insight_text', {
+        books: booksStr,
+        workouts: workoutsStr
+      });
+    }
   }
 
   // --- RENDER VIEWS ---
@@ -339,8 +459,8 @@
     if (apps.length === 0) {
       els.dashboardAppsPreview.innerHTML = `
         <div class="app-card text-center" style="padding: 24px 16px;">
-          <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.9rem;">No dating apps tracked yet.</p>
-          <button class="pill-btn primary" id="btn-empty-add-app">+ Add Your First App</button>
+          <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.9rem;">${window.i18n.t('apps_preview_empty')}</p>
+          <button class="pill-btn primary" id="btn-empty-add-app">${window.i18n.t('btn_add_first_app')}</button>
         </div>
       `;
       const btn = document.getElementById('btn-empty-add-app');
@@ -362,8 +482,8 @@
     if (apps.length === 0) {
       els.fullAppsList.innerHTML = `
         <div class="app-card text-center" style="padding: 30px 16px;">
-          <p style="color: var(--text-secondary); margin-bottom: 14px;">No apps tracked yet.</p>
-          <button class="pill-btn primary" id="btn-empty-add-app-full">+ Add Tracked App</button>
+          <p style="color: var(--text-secondary); margin-bottom: 14px;">${window.i18n.t('apps_preview_empty')}</p>
+          <button class="pill-btn primary" id="btn-empty-add-app-full">${window.i18n.t('btn_add_app')}</button>
         </div>
       `;
       const btn = document.getElementById('btn-empty-add-app-full');
@@ -389,32 +509,42 @@
 
     const motivationHtml = app.motivation ? `
       <div class="app-motivation-quote">
-        <span class="app-motivation-label">Why you deleted ${escapeHtml(app.name)}</span>
+        <span class="app-motivation-label">${window.i18n.t('card_why_deleted', { app: escapeHtml(app.name) })}</span>
         "${escapeHtml(app.motivation)}"
       </div>
     ` : '';
 
     const controlsHtml = showAllControls ? `
       <div class="app-actions">
-        <button class="app-action-link" data-edit-app="${app.id}">Edit</button>
-        <button class="app-action-link" data-reset-app="${app.id}">Slip-up / Reset</button>
-        <button class="app-action-link danger" data-delete-app="${app.id}">Delete</button>
+        <button class="app-action-link" data-edit-app="${app.id}">${window.i18n.t('card_btn_edit')}</button>
+        <button class="app-action-link" data-reset-app="${app.id}">${window.i18n.t('card_btn_slip')}</button>
+        <button class="app-action-link danger" data-delete-app="${app.id}">${window.i18n.t('card_btn_delete')}</button>
       </div>
     ` : `
       <div class="app-actions">
-        <button class="app-action-link" data-reset-app="${app.id}">Slip-up</button>
+        <button class="app-action-link" data-reset-app="${app.id}">${window.i18n.t('card_btn_slip_short')}</button>
       </div>
     `;
+
+    const isFreeUser = Boolean(app.neverPaid || Number(app.monthlyCost) === 0);
+    const savedRateStr = isFreeUser
+      ? window.i18n.t('card_saved_rate_free', { min: app.dailyMinutes || 45 })
+      : window.i18n.t('card_saved_rate', {
+          min: app.dailyMinutes || 45,
+          fee: `${currency}${app.monthlyCost || 0}`
+        });
+
+    const deletedDateStr = window.i18n.t('card_deleted_on', {
+      date: formatDateShort(app.quitDate)
+    });
 
     card.innerHTML = `
       <div class="app-card-top">
         <div class="app-identity">
-          <div class="app-icon-badge" style="background-color: ${app.color || 'var(--accent)'};">
-            ${escapeHtml(app.name.charAt(0).toUpperCase())}
-          </div>
+          ${renderAppIconBadge(app, 36)}
           <div>
             <div class="app-name">${escapeHtml(app.name)}</div>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">Deleted ${formatDateShort(app.quitDate)}</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">${deletedDateStr}</span>
           </div>
         </div>
         <div class="app-streak-pill">${streakStr}</div>
@@ -423,7 +553,7 @@
       ${motivationHtml}
 
       <div class="app-card-metrics">
-        <span>Saved: ~${app.dailyMinutes || 45}m/day · ${currency}${app.monthlyCost || 0}/mo</span>
+        <span>${savedRateStr}</span>
         ${controlsHtml}
       </div>
     `;
@@ -443,7 +573,8 @@
 
   function renderMilestonesView() {
     const stats = window.storage.getOverallStats();
-    const milestones = window.MilestoneManager.getAll();
+    const currentLang = window.storage.getLanguage();
+    const milestones = window.MilestoneManager.getAll(currentLang);
     const currentHours = stats.overallMs / (1000 * 60 * 60);
 
     els.milestonesList.innerHTML = '';
@@ -464,7 +595,7 @@
           </div>
           <p class="milestone-item-desc">${m.desc}</p>
           <div class="milestone-insight-box">
-            <strong>Insight:</strong> ${m.insight}
+            <strong>${window.i18n.t('milestone_insight_label')}</strong> ${m.insight}
           </div>
         </div>
       `;
@@ -480,7 +611,7 @@
     if (entries.length === 0) {
       els.checkinHistoryList.innerHTML = `
         <div class="checkin-entry-card text-center" style="padding: 24px 16px;">
-          <p style="color: var(--text-muted); font-size: 0.85rem;">No reflections logged yet. Record your first check-in above!</p>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">${window.i18n.t('journal_empty')}</p>
         </div>
       `;
       return;
@@ -492,11 +623,33 @@
 
       const dateStr = formatDateTime(entry.timestamp);
 
+      // Localize mood label if possible
+      let moodDisplay = entry.moodLabel;
+      if (typeof moodDisplay === 'string' && moodDisplay.startsWith('mood_')) {
+        entry.mood = moodDisplay.replace('mood_', '');
+        moodDisplay = '';
+      }
+
+      if (entry.mood && window.i18n) {
+        let normalizedMood = entry.mood.toLowerCase();
+        if (normalizedMood === 'calm') normalizedMood = 'peaceful';
+        const key = `mood_${normalizedMood}`;
+        if (window.i18n.has && window.i18n.has(key)) {
+          moodDisplay = window.i18n.t(key);
+        } else if (window.i18n.has && window.i18n.has(`mood_${entry.mood}`)) {
+          moodDisplay = window.i18n.t(`mood_${entry.mood}`);
+        }
+      }
+
+      if (!moodDisplay) {
+        moodDisplay = entry.moodLabel || 'Peaceful';
+      }
+
       card.innerHTML = `
         <div class="checkin-entry-header">
           <div class="checkin-mood-tag">
             <span>${entry.emoji || '🌿'}</span>
-            <span>${escapeHtml(entry.moodLabel || 'Peaceful')}</span>
+            <span>${escapeHtml(moodDisplay || 'Peaceful')}</span>
           </div>
           <span class="checkin-date">${dateStr}</span>
         </div>
@@ -528,9 +681,32 @@
         }
 
         if (chip.dataset.min) els.appInputMinutes.value = chip.dataset.min;
-        if (chip.dataset.cost) els.appInputCost.value = chip.dataset.cost;
+        if (chip.dataset.cost) {
+          if (els.appInputNeverPaid && els.appInputNeverPaid.checked) {
+            els.appInputCost.value = '0';
+          } else {
+            els.appInputCost.value = chip.dataset.cost;
+          }
+        }
       });
     });
+
+    // Never paid toggle listener
+    if (els.appInputNeverPaid) {
+      els.appInputNeverPaid.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          els.appInputCost.value = '0';
+          els.appInputCost.disabled = true;
+          els.appInputCost.style.opacity = '0.5';
+        } else {
+          els.appInputCost.disabled = false;
+          els.appInputCost.style.opacity = '1';
+          if (parseFloat(els.appInputCost.value) === 0) {
+            els.appInputCost.value = '25';
+          }
+        }
+      });
+    }
 
     // Form submit
     if (els.formAppEdit) {
@@ -551,13 +727,22 @@
       });
     }
 
-    // Settings modal inputs
+    // Settings Theme select
     if (els.settingsThemeSelect) {
       els.settingsThemeSelect.addEventListener('change', (e) => {
         applyTheme(e.target.value);
       });
     }
 
+    // Settings Language select
+    if (els.settingsLangSelect) {
+      els.settingsLangSelect.value = window.storage.getLanguage();
+      els.settingsLangSelect.addEventListener('change', (e) => {
+        applyLanguage(e.target.value, true);
+      });
+    }
+
+    // Settings Currency select
     if (els.settingsCurrencySelect) {
       els.settingsCurrencySelect.value = window.storage.data.currency || '€';
       els.settingsCurrencySelect.addEventListener('change', (e) => {
@@ -589,9 +774,9 @@
         try {
           const jsonStr = window.storage.exportDataAsJSON();
           await navigator.clipboard.writeText(jsonStr);
-          alert('Backup data copied to clipboard! Keep it safe.');
+          alert(window.i18n.t('backup_copied_alert'));
         } catch (err) {
-          alert('Could not copy to clipboard automatically.');
+          alert(window.i18n.t('backup_copy_fail_alert'));
         }
       });
     }
@@ -607,11 +792,13 @@
           const content = event.target.result;
           const result = window.storage.importDataFromJSON(content);
           if (result.success) {
-            alert(`Backup restored successfully! (${result.count} apps loaded)`);
+            alert(window.i18n.t('backup_restored_alert', { count: result.count }));
             closeModal(els.modalSettings);
-            renderAll();
+            // Re-apply language if stored in imported backup
+            const restoredLang = window.storage.getLanguage();
+            applyLanguage(restoredLang, true);
           } else {
-            alert(`Failed to restore backup: ${result.error}`);
+            alert(window.i18n.t('backup_restore_error_alert', { error: result.error }));
           }
         };
         reader.readAsText(file);
@@ -622,28 +809,33 @@
     if (els.btnCheckUpdates) {
       els.btnCheckUpdates.addEventListener('click', async () => {
         if (!serviceWorkerRegistration) {
-          els.updateStatusText.textContent = 'Offline ready. Checked just now.';
+          els.updateStatusText.textContent = window.i18n.t('settings_status_checked');
           return;
         }
-        els.updateStatusText.textContent = 'Checking server...';
+        els.updateStatusText.textContent = window.i18n.t('settings_status_checking');
         try {
           await serviceWorkerRegistration.update();
           setTimeout(() => {
-            els.updateStatusText.textContent = 'App is up to date.';
+            els.updateStatusText.textContent = window.i18n.t('settings_status_up_to_date');
           }, 800);
         } catch (e) {
-          els.updateStatusText.textContent = 'Checked just now.';
+          els.updateStatusText.textContent = window.i18n.t('settings_status_checked');
         }
       });
     }
   }
 
   function openAddAppModal() {
-    els.appModalTitle.textContent = 'Add Tracked App';
+    els.appModalTitle.textContent = window.i18n.t('app_modal_title_add');
     els.appEditId.value = '';
     els.appInputName.value = '';
     els.appInputMinutes.value = '45';
     els.appInputCost.value = '25';
+    els.appInputCost.disabled = false;
+    els.appInputCost.style.opacity = '1';
+    if (els.appInputNeverPaid) {
+      els.appInputNeverPaid.checked = false;
+    }
     els.appInputMotivation.value = '';
 
     // Set default quit date to right now formatted for datetime-local
@@ -659,11 +851,28 @@
     const app = window.storage.getApp(appId);
     if (!app) return;
 
-    els.appModalTitle.textContent = `Edit ${app.name}`;
+    const iconConfig = getAppIconConfig(app.name);
+    const iconInline = iconConfig ? `
+      <img src="${iconConfig.src}" alt="" style="width: 18px; height: 18px; vertical-align: -3px; margin-right: 6px; display: inline-block; border-radius: 4px;">
+    ` : '';
+
+    els.appModalTitle.innerHTML = `${iconInline}${window.i18n.t('app_modal_title_edit', { name: escapeHtml(app.name) })}`;
     els.appEditId.value = app.id;
     els.appInputName.value = app.name;
     els.appInputMinutes.value = app.dailyMinutes || 45;
-    els.appInputCost.value = app.monthlyCost || 0;
+    const isNeverPaid = Boolean(app.neverPaid || Number(app.monthlyCost) === 0);
+    if (els.appInputNeverPaid) {
+      els.appInputNeverPaid.checked = isNeverPaid;
+    }
+    if (isNeverPaid) {
+      els.appInputCost.value = '0';
+      els.appInputCost.disabled = true;
+      els.appInputCost.style.opacity = '0.5';
+    } else {
+      els.appInputCost.value = app.monthlyCost || 25;
+      els.appInputCost.disabled = false;
+      els.appInputCost.style.opacity = '1';
+    }
     els.appInputMotivation.value = app.motivation || '';
 
     // Format app quit date for datetime-local
@@ -679,11 +888,12 @@
     const name = els.appInputName.value.trim();
     const quitDateValue = els.appInputQuitdate.value;
     const dailyMinutes = parseFloat(els.appInputMinutes.value) || 45;
-    const monthlyCost = parseFloat(els.appInputCost.value) || 0;
+    const neverPaid = els.appInputNeverPaid ? els.appInputNeverPaid.checked : false;
+    const monthlyCost = neverPaid ? 0 : (parseFloat(els.appInputCost.value) || 0);
     const motivation = els.appInputMotivation.value.trim();
 
     if (!name || !quitDateValue) {
-      alert('Please provide an app name and quit date.');
+      alert(window.i18n.t('alert_app_missing_fields'));
       return;
     }
 
@@ -705,6 +915,7 @@
       quitDate,
       dailyMinutes,
       monthlyCost,
+      neverPaid,
       motivation
     });
 
@@ -717,7 +928,14 @@
     if (!app) return;
 
     resettingAppId = appId;
-    els.resetAppName.textContent = app.name;
+    const iconConfig = getAppIconConfig(app.name);
+    const iconInline = iconConfig ? `
+      <img src="${iconConfig.src}" alt="" style="width: 16px; height: 16px; vertical-align: -2px; margin-right: 4px; display: inline-block; border-radius: 3px;">
+    ` : '';
+    const resetExpl = document.getElementById('reset-modal-explanation');
+    if (resetExpl) {
+      resetExpl.innerHTML = window.i18n.t('reset_modal_desc', { name: `${iconInline}${escapeHtml(app.name)}` });
+    }
     els.resetReasonInput.value = '';
     openModal(els.modalReset);
   }
@@ -726,7 +944,7 @@
     const app = window.storage.getApp(appId);
     if (!app) return;
 
-    if (confirm(`Remove "${app.name}" from your tracked apps? Your streak data for this app will be deleted.`)) {
+    if (confirm(window.i18n.t('confirm_delete_app', { name: app.name }))) {
       window.storage.deleteApp(appId);
       renderAll();
     }
@@ -751,7 +969,9 @@
     if (els.btnToggleBreathing) {
       els.btnToggleBreathing.addEventListener('click', () => {
         breathingActive = !breathingActive;
-        els.btnToggleBreathing.textContent = breathingActive ? '⏸ Pause Breathing' : '▶ Resume Breathing';
+        els.btnToggleBreathing.textContent = breathingActive 
+          ? window.i18n.t('btn_pause_breathing') 
+          : window.i18n.t('btn_resume_breathing');
       });
     }
   }
@@ -763,7 +983,7 @@
     if (apps.length === 0) {
       const opt = document.createElement('option');
       opt.value = '';
-      opt.textContent = 'All Apps';
+      opt.textContent = window.i18n.t('sos_app_select_all');
       els.sosAppSelect.appendChild(opt);
     } else {
       apps.forEach(app => {
@@ -782,11 +1002,15 @@
     const app = window.storage.getApp(selectedId);
 
     if (app && app.motivation) {
-      els.sosAppLabel.textContent = `Why you deleted ${app.name}:`;
+      const iconConfig = getAppIconConfig(app.name);
+      const iconInline = iconConfig ? `
+        <img src="${iconConfig.src}" alt="" style="width: 16px; height: 16px; vertical-align: -2px; margin-right: 5px; display: inline-block; border-radius: 3px;">
+      ` : '';
+      els.sosAppLabel.innerHTML = `${iconInline}${window.i18n.t('sos_label_why_app')}`;
       els.sosMotivationText.textContent = `"${app.motivation}"`;
     } else {
-      els.sosAppLabel.textContent = `Why you chose freedom:`;
-      els.sosMotivationText.textContent = `"Remember: Swiping is an algorithmic slot machine designed to keep you single and addicted to cheap dopamine. Real life is waiting outside."`;
+      els.sosAppLabel.textContent = window.i18n.t('sos_label_why_freedom');
+      els.sosMotivationText.textContent = `"${window.i18n.t('sos_default_motivation')}"`;
     }
   }
 
@@ -794,24 +1018,26 @@
     breathingActive = true;
     breathingPhaseIndex = 0;
     breathingSecondsLeft = 4;
-    els.btnToggleBreathing.textContent = '⏸ Pause Breathing';
+    els.btnToggleBreathing.textContent = window.i18n.t('btn_pause_breathing');
     updateBreathingUI();
 
     if (breathingInterval) clearInterval(breathingInterval);
     breathingInterval = setInterval(() => {
       if (!breathingActive) return;
 
+      const phases = getBreathingPhases();
       breathingSecondsLeft--;
       if (breathingSecondsLeft <= 0) {
-        breathingPhaseIndex = (breathingPhaseIndex + 1) % BREATHING_PHASES.length;
-        breathingSecondsLeft = BREATHING_PHASES[breathingPhaseIndex].duration;
+        breathingPhaseIndex = (breathingPhaseIndex + 1) % phases.length;
+        breathingSecondsLeft = phases[breathingPhaseIndex].duration;
       }
       updateBreathingUI();
     }, 1000);
   }
 
   function updateBreathingUI() {
-    const current = BREATHING_PHASES[breathingPhaseIndex];
+    const phases = getBreathingPhases();
+    const current = phases[breathingPhaseIndex] || phases[0];
     els.breathingInstruction.textContent = current.label;
     els.breathingTimer.textContent = `${breathingSecondsLeft}s`;
 
@@ -846,7 +1072,7 @@
 
         els.checkinNote.value = '';
         renderJournalView();
-        alert('Reflection saved!');
+        alert(window.i18n.t('journal_saved_alert'));
       });
     }
   }
@@ -920,9 +1146,9 @@
       els.btnCopyPhoneUrl.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(targetUrl);
-          alert('Link copied! You can paste or send it to your iPhone: ' + targetUrl);
+          alert(window.i18n.t('link_copied_alert', { url: targetUrl }));
         } catch (e) {
-          alert('URL to open on your iPhone: ' + targetUrl);
+          alert('URL: ' + targetUrl);
         }
       });
     }
@@ -981,20 +1207,24 @@
       els.updateBanner.classList.add('visible');
     }
     if (els.updateStatusText) {
-      els.updateStatusText.textContent = 'New update ready!';
+      els.updateStatusText.textContent = window.i18n.t('update_ready');
     }
   }
 
   // --- FORMATTING HELPERS ---
+  function getLocaleString() {
+    return window.storage.getLanguage() === 'de' ? 'de-DE' : 'en-US';
+  }
+
   function formatStreak(ms) {
     const totalSecs = Math.floor(ms / 1000);
     const d = Math.floor(totalSecs / 86400);
     const h = Math.floor((totalSecs % 86400) / 3600);
     const m = Math.floor((totalSecs % 3600) / 60);
 
-    if (d > 0) return `${d}d ${h}h free`;
-    if (h > 0) return `${h}h ${m}m free`;
-    return `${m}m free`;
+    if (d > 0) return window.i18n.t('streak_days_hours', { d, h });
+    if (h > 0) return window.i18n.t('streak_hours_mins', { h, m });
+    return window.i18n.t('streak_mins', { m });
   }
 
   function formatShortTime(ms) {
@@ -1002,28 +1232,31 @@
     const d = Math.floor(totalSecs / 86400);
     const h = Math.floor((totalSecs % 86400) / 3600);
 
-    if (d > 0) return `${d} days`;
-    if (h > 0) return `${h} hours`;
-    return `less than 1 hour`;
+    if (d > 0) return window.i18n.t('time_ago_days', { d });
+    if (h > 0) return window.i18n.t('time_ago_hours', { h });
+    return window.i18n.t('time_ago_less_hour');
   }
 
   function formatDateShort(isoDate) {
     const d = new Date(isoDate);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const locale = getLocaleString();
+    return d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
   }
 
   function formatDateTime(isoDate) {
     const d = new Date(isoDate);
-    return `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+    const locale = getLocaleString();
+    return `${d.toLocaleDateString(locale, { month: 'short', day: 'numeric' })} · ${d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
   }
 
   function formatMilestoneHours(hours) {
-    if (hours < 24) return `${hours}h`;
+    const isDe = window.storage.getLanguage() === 'de';
+    if (hours < 24) return isDe ? `${hours} Std.` : `${hours}h`;
     const days = Math.round(hours / 24);
-    if (days < 30) return `${days} Days`;
+    if (days < 30) return isDe ? `${days} Tage` : `${days} Days`;
     const months = Math.round(days / 30);
-    if (months < 12) return `${months} Months`;
-    return `1 Year`;
+    if (months < 12) return isDe ? `${months} Monate` : `${months} Months`;
+    return isDe ? `1 Jahr` : `1 Year`;
   }
 
   function escapeHtml(str) {
