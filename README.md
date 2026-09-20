@@ -57,9 +57,10 @@ Choose the option that fits your setup:
 2. **Sign in** with the same account on both devices.
 3. **Serve the project folder directly** via `tailscale serve` — no need to run `node server.js` separately:
    ```powershell
-   tailscale serve --bg C:\Users\YourName\AntigravityProjects\DatingAppFree
+   tailscale serve --bg C:\path\to\DatingAppFree
    ```
-   Replace the path with the actual path to your cloned project folder.  
+   Replace `C:\path\to\DatingAppFree` with the actual path to your cloned project folder  
+   *(e.g. right-click the folder in Explorer → "Copy as path")*.  
    This creates a `https://<your-machine-name>.<tailnet-name>.ts.net` URL with a valid certificate served directly by Tailscale's built-in file server.
 4. Open that `https://` URL on your iPhone in Safari and follow Step 3 above.
 5. **Open the app once from the Home Screen with Tailscale/VPN active** — this lets the Service Worker cache all assets on your device.
