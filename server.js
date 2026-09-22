@@ -1,14 +1,15 @@
 // Zero-dependency local development server for Dating App Free
 // Works on Windows, macOS, and Linux using built-in Node.js modules.
 
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const { exec } = require('child_process');
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { exec } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const PORT = process.env.PORT || 8080;
-const ROOT_DIR = __dirname;
+const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 // MIME types
 const MIME_TYPES = {

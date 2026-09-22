@@ -3,7 +3,7 @@
 // Note: App data (streaks, apps, motivations) lives in persistent client storage
 // and is NEVER altered or removed by service worker updates.
 
-const CACHE_NAME = 'dating-free-v1.0.32';
+const CACHE_NAME = 'dating-free-v2.0.0';
 
 // Only cache the root path (./), NOT ./index.html separately.
 // Tailscale serve (and similar reverse proxies) redirect /index.html → /,
@@ -12,11 +12,38 @@ const CACHE_NAME = 'dating-free-v1.0.32';
 const ASSETS_TO_CACHE = [
   './',
   './css/styles.css',
+  './css/themes.css',
+  './css/base.css',
   './js/qrcode.js',
+  './js/main.js',
+  './js/app.js',
+  './js/config/constants.js',
+  './js/config/app-icons.js',
+  './js/utils/dom.js',
+  './js/utils/formatters.js',
+  './js/services/i18n.js',
+  './js/services/milestones.js',
+  './js/services/storage.js',
+  './js/services/navigation.js',
+  './js/services/theme.js',
+  './js/services/pwa.js',
+  './js/components/ticker.js',
+  './js/components/breathing.js',
+  './js/components/backup.js',
+  './js/components/settings.js',
+  './js/components/qr-generator.js',
+  './js/views/modals.templates.js',
+  './js/views/apps.view.js',
+  './js/views/dashboard.view.js',
+  './js/views/journal.view.js',
+  './js/views/milestones.view.js',
+  './js/views/moments.view.js',
+  './js/views/people.view.js',
+  './js/views/stories.view.js',
+  './js/views/urge-sos.view.js',
   './js/i18n.js',
   './js/storage.js',
   './js/milestones.js',
-  './js/app.js',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/apple-touch-icon.png',
