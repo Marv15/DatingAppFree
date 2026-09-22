@@ -365,8 +365,9 @@ export class MilestoneManager {
 
     if (nextMilestone) {
       const targetHours = nextMilestone.hours;
-      const progressInSegment = Math.max(0, hours);
-      progressPercent = Math.min(100, Math.max(0, (progressInSegment / targetHours) * 100));
+      const progressInSegment = Math.max(0, hours - currentMilestone.hours);
+      const currentMilestoneHoursProgress = Math.min(currentMilestone.hours, targetHours - currentMilestone.hours);
+      progressPercent = Math.min(100, Math.max(0, (progressInSegment / currentMilestoneHoursProgress) * 100));
       hoursRemaining = Math.max(0, targetHours - hours);
     } else {
       progressPercent = 100;
