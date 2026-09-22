@@ -6,7 +6,7 @@ A minimalist habit and sobriety tracker for staying dating-app-free. Styled with
 
 ---
 
-## ⚡ Quick Start: Run Locally & Connect Your iPhone
+## ⚡ Quick Start: Run Locally & Connect Your Phone
 
 > [!IMPORTANT]
 > **HTTPS is required for the offline PWA cache (Service Worker) to work on your phone.**
@@ -30,7 +30,7 @@ The terminal will automatically detect your local Wi-Fi IP and display:
        🕊️  Dating App Free · Local Server Ready
 =============================================================
   🖥️  On this Computer:   http://localhost:8080
-  📱  On your iPhone:     http://192.168.x.x:8080
+  📱  On your Phone:      http://192.168.x.x:8080
 =============================================================
 ```
 
@@ -53,7 +53,7 @@ Choose the option that fits your setup:
 ### Option A: Tailscale (Recommended — Private, No Port Forwarding)
 [Tailscale](https://tailscale.com/) creates an encrypted, private WireGuard VPN between your devices. Your PC becomes reachable from your phone via a stable `https://` address — no port forwarding or router configuration needed.
 
-1. **Install Tailscale** on both your Windows PC and your iPhone: https://tailscale.com/download
+1. **Install Tailscale** on both your PC and your phone: https://tailscale.com/download
 2. **Sign in** with the same account on both devices.
 3. **Serve the project folder directly** via `tailscale serve` — no need to run `node server.js` separately:
    ```powershell
@@ -62,11 +62,11 @@ Choose the option that fits your setup:
    Replace `C:\path\to\DatingAppFree` with the actual path to your cloned project folder  
    *(e.g. right-click the folder in Explorer → "Copy as path")*.  
    This creates a `https://<your-machine-name>.<tailnet-name>.ts.net` URL with a valid certificate served directly by Tailscale's built-in file server.
-4. Open that `https://` URL on your iPhone in Safari and follow Step 3 above.
+4. Open that `https://` URL on your phone (Safari on iOS or Chrome on Android) and follow Step 3 above.
 5. **Open the app once from the Home Screen with Tailscale/VPN active** — this lets the Service Worker cache all assets on your device.
 
 **After that one-time load, the app works completely offline without VPN.** 🎉  
-iOS caches the DNS response for the Tailscale domain, and the Service Worker serves everything from local device storage — no network connection needed at all.
+The Service Worker serves everything from local device storage — no network connection needed at all.
 
 > [!NOTE]
 > Tailscale's built-in Go file server may redirect `/index.html` → `/`.
@@ -80,7 +80,7 @@ Fork this repo to your own GitHub account, then enable GitHub Pages for a perman
 1. Click **Fork** at the top of this page to create your own copy of the repo.
 2. In your fork, go to **Settings → Pages → Source**: `Deploy from a branch` → `master` / `/ (root)` → **Save**.
 3. After ~60 seconds your app is live at `https://<your-github-username>.github.io/DatingAppFree/`.
-4. Open that URL on your phone in Safari → Share → „Add to Home Screen" — done.
+4. Open that URL on your phone (Safari on iOS or Chrome on Android) → Share / Menu → „Add to Home Screen" — done.
 
 ### Option C: Local Tunnel (Quick Testing, Temporary URL)
 For short-lived testing without any account or install:
@@ -90,7 +90,7 @@ npx localtunnel --port 8080
 The command prints a `https://` URL you can open on your phone. The URL changes every session.
 
 ### Option D: Self-signed Certificate (Advanced)
-Generate a local certificate with [mkcert](https://github.com/FiloSottile/mkcert) and install the CA on your iPhone. This is more involved but keeps everything 100% local and offline.
+Generate a local certificate with [mkcert](https://github.com/FiloSottile/mkcert) and install the CA on your device. This is more involved but keeps everything 100% local and offline.
 
 ---
 
@@ -111,7 +111,7 @@ Generate a local certificate with [mkcert](https://github.com/FiloSottile/mkcert
 
 ## 🔒 Privacy & Data Safety
 
-- **100% Offline & Private**: No data is sent over the internet or to third-party servers. All streaks, motivations, and reflections live exclusively in your iPhone's browser storage.
+- **100% Offline & Private**: No data is sent over the internet or to third-party servers. All streaks, motivations, and reflections live exclusively in your device's local browser storage.
 - **Zero Internet Exposure**: The local server only listens on your private home Wi-Fi network (`192.168.x.x` or `10.x.x.x`).
 - **Safe Code Updates**: When you pull new updates from GitHub (`git pull`), your existing streaks and logs remain 100% untouched.
 
@@ -124,12 +124,12 @@ Generate a local certificate with [mkcert](https://github.com/FiloSottile/mkcert
 | [`start.bat`](start.bat) | Windows 1-click launcher (auto-detects Node.js or Python) |
 | [`start.sh`](start.sh) | macOS & Linux 1-click launcher |
 | [`server.js`](server.js) | Zero-dependency Node.js server with auto-IP detection & `/api/info` |
-| [`index.html`](index.html) | PWA markup, iOS meta tags, and Claude AI overlay modals |
-| [`css/styles.css`](css/styles.css) | Claude AI design system, warm oatmeal/charcoal palette, iOS safe areas |
-| [`js/app.js`](js/app.js) | Ticker engine, tabs, modals, Urge SOS, service worker updates |
-| [`js/storage.js`](js/storage.js) | Multi-app store, persistence, motivations, backup/restore |
-| [`js/milestones.js`](js/milestones.js) | Milestones definitions & neurochemical recovery stages |
-| [`js/qrcode.js`](js/qrcode.js) | Pure standalone SVG QR code generator for instant iPhone scanning |
-| [`manifest.webmanifest`](manifest.webmanifest) | PWA configuration for iOS standalone display |
+| [`index.html`](index.html) | PWA markup, mobile meta tags, and Claude AI overlay modals |
+| [`css/styles.css`](css/styles.css) | Claude AI design system, warm oatmeal/charcoal palette, mobile safe areas |
+| [`js/main.js`](js/main.js) | Main application bootstrap, view orchestration, and events |
+| [`js/services/storage.js`](js/services/storage.js) | Multi-app store, persistence, motivations, backup/restore |
+| [`js/services/milestones.js`](js/services/milestones.js) | Milestones definitions & neurochemical recovery stages |
+| [`js/qrcode.js`](js/qrcode.js) | Pure standalone SVG QR code generator for instant mobile QR scanning |
+| [`manifest.webmanifest`](manifest.webmanifest) | PWA configuration for standalone mobile display |
 | [`sw.js`](sw.js) | Service worker with offline caching (Safari-safe, redirect-resilient) |
 | [`icons/`](icons/) | High-res icons (180x180 Apple touch icon, 192x192, 512x512, SVG) |
