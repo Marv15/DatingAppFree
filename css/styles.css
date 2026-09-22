@@ -1420,6 +1420,20 @@ body {
   color: var(--text-primary);
 }
 
+.story-app-tag img,
+.story-app-badge img,
+.story-card .app-logo-img {
+  width: 14px !important;
+  height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  object-fit: contain;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: -2px;
+}
+
 .story-incident-tag {
   display: inline-flex;
   align-items: center;
@@ -2564,6 +2578,8 @@ body {
   justify-content: center;
   z-index: 200;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 .modal-backdrop.active {
